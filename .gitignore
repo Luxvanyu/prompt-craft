@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+
+# 脚本运行时产物
+_verify_*.jpg
+layout.png
+overlay.png
+*.png
+*.jpg
+*.jpeg
+!docs/**/*.png
+
+# 草稿与本地测试
+draft.json
+out.txt
+*.local.*
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
