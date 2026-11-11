@@ -1,8 +1,18 @@
-# 提示词工坊（prompt-craft）v1
+# 提示词工坊（prompt-craft）· 轻量版
 
 **一份能单独交付的提示词写作方法**：从「想画什么」到「可编译的提示词」，再到「出图后判断它错在哪一句」。
 
 规则全部来自 174 张出图实验（G1–G98 编号，每条带实测数值），不是审美偏好。合并自 `moss-replica` 与 `aesthetic-core` 两个包。
+
+> **这是 `lite` 分支，轻量版。**
+> 16 文件、十道关、`SKILL.md` 只有 246 行，脚本只有 4 个（probe / lint / compile_prompt / preview），没有多引擎翻译与参考图对比。适合想自己往上加东西时当起点。
+>
+> 完整版在 [`main` 分支](https://github.com/Luxvanyu/prompt-craft)：41 文件、十三道关、九期进阶工程（先验解绑 / 大动态格斗 / 双人战术对峙 / 介质光学 / 战损物理 / 双色温 / 极端机位 / 多格分镜 / 无人空景），另有 `translate.py` / `verify.py` / `render_krea2_html.py`。
+> ```bash
+> git clone https://github.com/Luxvanyu/prompt-craft.git prompt-craft-full
+> ```
+>
+> **本版缺什么**（如果要用，按需从 `main` 搬）：lint 关 11 先验解绑、关 12 动作解剖闭环、关 13 美学质感巡检；`references/` 下的 `aesthetic/` 九篇附录与 P1–P9 进阶文档。
 
 ---
 
