@@ -162,21 +162,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   }}
 </style>
 <script>
+// 复制按钮：只用 navigator.clipboard，无外部请求、无 eval、无内联数据注入
 function copyText(id, btn) {{
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(() => {{
-    const old = btn.innerText;
-    btn.innerText = "已复制 ✓";
-    btn.style.background = "#50fa7b";
-    btn.style.color = "#000";
-    setTimeout(() => {{
-      btn.innerText = old;
-      btn.style.background = "";
-      btn.style.color = "";
-    }}, 1500);
-  }}).catch(() => {{
-    alert("复制失败，请手动选取复制");
-  }});
+  var el = document.getElementById(id);
+  if (!el) return;
+  var t = el.innerText || el.textContent || "";
+  var done = function () {{
+    var old = btn.textContent;
+    btn.textContent = "已复制 ✓";
+    setTimeout(function () {{ btn.textContent = old; }}, 1200);
+  }};
+  if (navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(t).then(done).catch(function () {{ _fallback(t, done); }});
+  }} else {{
+    _fallback(t, done);
+  }}
+}}
+function _fallback(t, done) {{
+  var ta = document.createElement("textarea");
+  ta.value = t;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {{ document.execCommand("copy"); done(); }} catch (e) {{}}
+  document.body.removeChild(ta);
 }}
 </script>
 </head>

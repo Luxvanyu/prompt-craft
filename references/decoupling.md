@@ -5,7 +5,7 @@
 
 > **适用引擎**（先读这条再往下）：
 > - **MOSS-Image / Krea 2 / Midjourney / SD / Flux**：一律**只给正向**。先验要在画面里被别的实体「占位」掉——
->   把光环写成「她头顶什么都没有，天花板的灯罩是唯一圆形发光体」，而不是写 `no halo`。
+>   直接正常描写角色的头发、发饰与头顶上方的真实环境背景（如树冠、天空、天花板），**绝不要写 `no halo` 或 `empty air with nothing hovering`**，避免欲盖弥彰激活光环先验。
 > - **NAI / Anima**：负向串是合法工具，`-2::halo::` 这类加权负向才有意义。
 > 下文的 `{halo}` / `{head halo}` / `{floating halo}` 模板**只用于负向栏**，不要混进正向 caption。
 
@@ -23,6 +23,8 @@
 
 **传统单纯写「no halo」为什么会失败？**
 模型在去噪过程中，`halo` 这个词本身的嵌入向量（Embedding）会激活相关神经元，甚至导致“越否定反而越注意”。
+
+> **注意适用范围**：这条说的是**首轮预防**。如果出图已经长出光环，正面描写就来不及了，必须用「形状 + 画法 + 三连否认」硬压（`moss-rules.md` G19 补充）——那是修复轮的做法，与这里的纪律不冲突。
 
 ---
 
@@ -49,8 +51,8 @@
 ### 步骤二：物理占位与动作指派（Physical Space Occupancy）
 * **原则**：模型不会让空间或肢体处于“待定”状态。如果你不主动规定它是什么，模型就会按先验自动填上。
 * **操作**：
-  * **头部空间占位（防光环/防头纱）**：  
-    `above and behind her head the space is empty air, with nothing floating or hovering over her hair`
+  * **头部自然描写（防光环/防头纱 · 严禁欲盖弥彰）**：  
+    不要写 `no halo` 或 `nothing hovering`，而是直接写发丝与背景物体的自然衔接（如 `her wind-ruffled hair frames her face against the clear oak bookshelves behind her`）。
   * **双手动作重定向（防手拿杯子/防乱摸）**：  
     `her hands swing freely at her sides with her walking motion, leaving her hands completely off the cup`
   * **发饰贴头锁定（防悬浮环状发饰）**：  
@@ -69,8 +71,12 @@
 
 ### 1. 羽翼去光环（Wings without Halo）
 * **诱发源**：`angel`, `angelic`, `holy glow`, `golden rim light around head`
-* **正向解绑句**：
-  `A young woman with long pale hair and feathered wings. Above and behind her head there is no halo and no floating ring, the space over her hair is completely empty air with nothing hovering or glowing.`
+* **首轮写法（推荐，不否定、只正面描写）**：
+  `A young woman with long pale hair and feathered wings, the wind lifting the strands so they break against the dark oak leaves behind her; the crown of her head is framed by two branches and a strip of overcast sky.`
+  要点：把「头顶上方是什么」写成一个**具体的实物**（树枝、天花板、云层、墙面），发丝与它有自然遮挡关系。正向锁定比任何否定句都稳。
+* **修复轮（首轮已经出光环了才用，见 `moss-rules.md` G19 补充）**：
+  `Above and behind her head there is no halo and no floating ring, the space over her hair is completely empty air with nothing hovering or glowing.`
+  这一句会吃 lint 关 11 的 WARN —— 那是**故意**的。首轮写了是欲盖弥彰，修复轮不写压不回去，两者取舍见 SKILL.md「光环设定规范」。
 * **负向补充**：
   `halo, head halo, floating halo, glowing ring, nimbus, ring of light`
 

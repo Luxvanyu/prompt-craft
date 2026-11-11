@@ -15,11 +15,16 @@ import argparse
 import io
 import os
 import sys
+import warnings
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception:
     pass
+
+# Pillow 12+ 对 Image.getdata() 发 DeprecationWarning（Pillow 14 移除），
+# 这里仍在用它的旧接口语义，屏蔽掉以免刷屏干扰诊断输出
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
 
@@ -44,12 +49,11 @@ def load_rgb(path, long_side=760):
 
 
 def _lum(im):
-    """亮度：与 probe.py 同一套 RGB 加权系数，不再用 PIL 的 convert("L")。
+    """亮度：与 probe.py 同一套 RGB 加权系数，不用 PIL 的 convert("L")。
 
-    PIL 的 L 转换用的是 ITU-R 601（0.299/0.587/0.114），probe.py 用 ITU-R 709
-    （0.2126/0.7152/0.0722）。两者在纯灰图上一样，在有彩色区域会差到 0.016，
+    PIL 的 L 转换用 ITU-R 601（0.299/0.587/0.114），probe.py 用 ITU-R 709
+    （0.2126/0.7152/0.0722）。纯灰图上一样，有彩色区域会差到 0.016，
     足以让 flat / strong 这类阈值判据差出 0.02，导致两个脚本对同一张图报不同数。
-    这里统一走 709，保证 verify 与 probe 逐位一致。
     """
     if _np is not None:
         a = _np.asarray(im.convert("RGB"), dtype=_np.float32) / 255.0
@@ -114,13 +118,10 @@ def measure(im):
     # 软 / 硬：局部梯度幅值占比（与 probe.py 完全同口径：np.gradient + hypot）
     # strong = 边缘像素占比（梯度 > 0.08）；soft = 1 - strong，保持两者互补
     if _np is not None:
-        # 直接对 float 亮度求梯度，不做 uint8 量化——量化会把 <0.02 的微小台阶
-        # 抬到 1/255≈0.0039 以上，让 flat 比起 probe.py 系统性偏低（实测差 0.012）
-        if _np is not None:
-            _a = _np.asarray(im.convert("RGB"), dtype=_np.float32) / 255.0
-            _grad_arr = 0.2126 * _a[..., 0] + 0.7152 * _a[..., 1] + 0.0722 * _a[..., 2]
-        else:
-            _grad_arr = _np.asarray(L, dtype=_np.float32) / 255.0
+        # 直接对 float 亮度求梯度，不做 uint8 量化——
+        # 量化会把 <0.02 的微小台阶抬到 1/255≈0.0039 以上，让 flat 系统性偏低（实测差 0.012）
+        _a = _np.asarray(im.convert("RGB"), dtype=_np.float32) / 255.0
+        _grad_arr = 0.2126 * _a[..., 0] + 0.7152 * _a[..., 1] + 0.0722 * _a[..., 2]
         _gy, _gx = _np.gradient(_grad_arr)
         g_mag = _np.hypot(_gx, _gy)
         strong = float((g_mag > 0.08).mean())
@@ -261,7 +262,7 @@ LEVEL = {0: "[严重]", 1: "[明显]", 2: "[轻微]", 3: "[定位]"}
 def fmt_table(ref, out):
     lines = ["%-8s %8s %8s %8s" % ("指标", "参考", "出图", "差值")]
     for k in ("mean", "med", "dark", "mid", "bright", "nw", "p1", "p99",
-              "sat", "lit", "shadow", "soft", "strong"):
+              "sat", "lit", "shadow", "soft", "strong", "flat"):
         lines.append("%-8s %8.3f %8.3f %+8.3f" % (k, ref[k], out[k], out[k] - ref[k]))
     for k in ("hue", "r", "g", "b"):
         if isinstance(ref[k], int) and isinstance(out[k], int):

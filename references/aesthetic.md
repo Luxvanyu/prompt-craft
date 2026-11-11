@@ -260,3 +260,37 @@ AI 的五个出厂设置，每个都要主动打掉一个：
 | I | `references/aesthetic/i-critique.md` | 批评 |
 
 > 拆成独立文件是为了按需加载：只在正文指到的那一篇时才去读，不必整份 1651 行一次性载入。
+
+
+---
+
+## 顶级光影范本（叙事闭环拆解）
+
+这类提示词之所以被称为黄金范本，是因为它在满足物理规则的同时，赋予了画面文学意境与高密度触感：
+
+```
+North daylight pours from high camera left through the single stone window, half-hard, key to fill being eight to one, casting a small classic triangle of light across her shadow-side cheek. The light strikes three distinct surfaces: the bridge of her nose and cheekbone, the folded fabric over her chest, and the curved upper edge of her left wing. The light dies within a forearm's reach, and the background wall falls three stops under, while the deep recesses beneath the archway and wing roots drop down to black as the darkest notes in the picture. The brightest note in the frame is the warm honey highlight on the leading quill of her wing against the window opening, stopping one step short of blowing out.
+Dominant colours are the soft pink of her hair and eyes contrasted against warm gold accents on her clip, the rich dark ochre and umber tones of the aged stone walls, the deep olive green shadows of the arcade, and a glimpse of cool blue sky through the glass. A heavy crimson velvet curtain tieback and a single fallen white feather rest on the stone sill beside her as physical evidence of the quiet room.
+```
+
+**自检三要素**：
+1. 画面有没有「一处具象实体高光锚点 + 纯黑暗部锚点」把明度尺拉满？
+2. 光线有没有明确的「8:1 衰减」与「只打三处结构面」的克制？
+3. 空间有没有「一件带有时间温度的物证道具」切断纯 AI 生成的虚假感？
+
+
+---
+
+## 终极进阶：二次元现实融合（Candid Realism & The Sublime）
+
+根据 85 张大师级经典作品分析，二次元角色与真实环境完美共存的核心在于：
+
+1. **光环非刚需与自然描写律（No Mandatory Halo & No Defensive Overkill）**：
+   - 角色默认不带光环；
+   - 正常写人即可，严禁使用 `no halo / empty air with nothing hovering` 等生硬的防御性否定句（避免欲盖弥彰激活先验）；
+   - 专注描写真实发丝质感与光影，不提光环。
+2. **拒绝死板立绘站桩**：
+   - 角色必须处于「微动作」、「心流专注」或「与环境道具发生物理接触」中；
+   - 角色必须受环境光全方位洗礼（环境光决定漫射与阴影色彩）。
+3. **真实世界的杂乱度（Entropy & Realism）**：
+   - 地面与桌案必须有现实生活的混乱物证（折痕、碎屑、蒸汽、水洼、压痕）。

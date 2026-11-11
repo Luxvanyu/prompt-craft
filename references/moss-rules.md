@@ -348,6 +348,17 @@ MOSS 的 text 块默认把文字画成**正对观众**的平面字，哪怕它�
 
 除非用户明确要求画面里有字（招牌、价签、编号、显示数字），否则**不要生成 text 块**。理由：文字块是失败率最高的一块，模型要么糊成乱码，要么把字画成正对观众的平面贴纸；即使十关全过，出图也常常只有这一块是废的。需要“有标识感”的地方，用**没有字的形状**代替：空白的搪瓷牌、磨掉的丝印、只剩一个圆钉的标牌、被撕掉一半的贴纸。
 
+
+### 官方产物交付形态规范（Caption vs Layout 交付对齐）
+
+1. **Caption（默认）**：
+   - 本地草稿：`{"caption": "..."}` JSON 文件；
+   - 最终交付：**纯英文段落文本（Plain Text）**，直接用于粘贴。
+2. **Layout（排版/多格专用）**：
+   - 本地草稿：必须使用 `references/layout.md` 规范的绝对像素坐标 `[x1, y1, x2, y2]` 与顶层 `width`/`height`；
+   - 最终交付：运行 `compile_prompt.py` 编译后的**单行 JSON**（中心化坐标 `abs_centralized` + `yxyx`）；
+   - **尺寸外挂**：必须在提示词外部单独附带 `width × height` 说明（例如：`画布推荐尺寸：1536×1024`）。
+
 ### 编译报错的三个坑（2026-11-06）
 
 - `summary.canvas` 是**字符串** `"single"`（或 `"multi_panel"` / `"collage"`），写成 `{"width":..,"height":..}` 会报 `Error: summary.canvas must be single, multi_panel or collage`。
@@ -802,6 +813,8 @@ she is looking down at her hands, her mouth is slightly open, and she is not smi
 - 画法：`it sits flat in the air like a piece of wire, and it is drawn with one line and not filled`。
 - 否认：`it is not white, it does not glow, it is not a ring of light, there is no halo of light around her head, and it casts no light on her hair or her shoulders`。
 
+> **这条只在修复轮使用。** 三连否认是「画面上已经有了光环、必须把它压回去」时的唯一有效手段（83 号实测）。首轮预防**不要**这么写——主动提否定词会在隐空间激活光环概念（见 `decoupling.md` 第一节、`SKILL.md:103`）。首轮的正解是正面锁定头顶上方那件具体实物。lint 关 11 会对这类否定句报 WARN，在修复轮属于预期行为，不必清掉。
+
 漏掉任何一样，它就会变成发光装饰。
 
 ## G25 修订 + G26 无人图的尺度锚（91/92 实测，2026-11-06）
@@ -856,7 +869,7 @@ she is looking down at her hands, her mouth is slightly open, and she is not smi
 - 动画模型出拉丁字母极容易糊成乱码或拼错，一旦糊掉整张图就废；而大部分场景没有文字也完全成立，所以默认给零文字。
 - 自助检查：交付前 grep 草稿里的 text 块与引号内的全大写词，无一例外全删（除用户点名）。
 
-## 第 4.5 步：交付前过十二道自检（lint）
+## 第 4.5 步：交付前过十三道自检（lint）
 
 写完草稿、编译之前，先跑一遍自检。这一步是**强制**的，不许跳过。
 

@@ -49,13 +49,15 @@ def strings(value, location):
 
 
 def centered_box(box, width, height, location):
-    require(isinstance(box, list) and len(box) == 4, f"{location} must be [x1,y1,x2,y2] — 左上角起算的绝对像素框，例如 [300, 200, 1200, 900]")
+    require(isinstance(box, list) and len(box) == 4,
+            f"{location} must be [x1,y1,x2,y2] — 左上角起算的绝对像素框，例如 [300, 200, 1200, 900]")
     require(
         all(type(v) in (int, float) and math.isfinite(v) for v in box),
         f"{location} must contain four finite numbers — 例如 [300, 200, 1200, 900]，不要写字符串或 null",
     )
     x1, y1, x2, y2 = box
-    require(x1 < x2 and y1 < y2, f"{location} must have positive width and height — 要求 x1<x2 且 y1<y2，现在填的是 {box!r}")
+    require(x1 < x2 and y1 < y2,
+            f"{location} must have positive width and height — 要求 x1<x2 且 y1<y2，现在填的是 {box!r}")
     require(
         0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height,
         f"{location} exceeds the {width}x{height} canvas — 四个值必须落在 0..width / 0..height 之内，现在填的是 {box!r}",
@@ -73,7 +75,8 @@ def centered_box(box, width, height, location):
 
 
 def compile_prompt(draft):
-    require(isinstance(draft, dict), "Draft must be a JSON object — 最外层必须是 {...}，例如 {\"caption\": \"...\"} 或 Layout 草稿")
+    require(isinstance(draft, dict),
+            "Draft must be a JSON object — 最外层必须是 {...}，例如 {\"caption\": \"...\"} 或 Layout 草稿")
     if "caption" in draft:
         fields(draft, {"caption"}, {"caption"}, "Caption draft")
         text(draft["caption"], "caption")
@@ -113,7 +116,8 @@ def compile_prompt(draft):
             strings(summary[key], f"summary.{key}")
 
     items = draft["items"]
-    require(isinstance(items, list) and bool(items), "items must be a nonempty flat array — items 必须是平铺数组（不要按角色分组嵌套），且至少一项")
+    require(isinstance(items, list) and bool(items),
+            "items must be a nonempty flat array — items 必须是平铺数组（不要按角色分组嵌套），且至少一项")
     compiled_items = []
     for index, item in enumerate(items):
         location = f"items[{index}]"
@@ -123,7 +127,8 @@ def compile_prompt(draft):
                 f"{location}.label must be object, character or text — 现在填的是 {item['label']!r}；不要用 type 字段")
         text(item["caption"], f"{location}.caption")
         if item["label"] == "text":
-            require("text" in item, f"{location}: text items require literal text — label 为 text 时必须同时给 text 字段写明画面里的字")
+            require("text" in item,
+                    f"{location}: text items require literal text — label 为 text 时必须同时给 text 字段写明画面里的字")
         if "text" in item:
             text(item["text"], f"{location}.text")
         for key in ("tags", "palette"):

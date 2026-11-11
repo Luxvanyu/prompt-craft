@@ -226,14 +226,12 @@
 python "C:/Users/Administrator/.dsh/skills/json-prompt-visualizer/scripts/canvas.py" NN.json --notes NN-notes.json --image 出图.png -o NN-canvas.html
 # 注意：canvas.py 不在本 skill 的 scripts/ 里，属于外部技能 json-prompt-visualizer；
 # 本包只依赖、不分发。缺这个技能时交付四件套降级为三件（json/txt/notes.json）。
-# 上面的绝对路径是本机写法；换机器时改成你自己 skills 目录下的对应路径。
 ```
 
-**`notes.json` 的第一个分句就是框头显示的名字。**格式 `{"summary_zh": "...", "items":[{"caption_zh": "石拱桥——一座横跨……"}]}`，`caption_zh` 用 `——` 隔开「短名」与「描述」。已给 canvas.py 打过补丁（`shortName()`），框头从统一的「物体」改成显示这个短名，物体/人物/文字靠颜色区分。没给 notes 时退化为英文 caption 的首个分句。
+**`notes.json` 的第一个分句就是框头显示的名字。**格式 `{"summary_zh": "...", "items":[{"caption_zh": "石拱桥——一座横跨……"}]}`，`caption_zh` 用 `——` 隔开「短名」与「描述」。**上面的绝对路径是本机写法**，换机器时改成你自己 skills 目录下的对应路径。另外这个 `shortName()` 补丁只打在本机那份 canvas.py 上，**没有跟着本包分发**——别人 clone 拿到的是原版，框头会退化成统一的「物体」，不影响出图，只影响画布可读性。
 - 短名要能一眼认出是画面里哪一块（天空 / 远岸 / 石拱桥 / 桥栏钠灯 / 河面与倒影），不要写「物体1」。
 - `notes.json` 不参与编译（官方编译器不认），纯给自己看和给画布显示。
 - 改 canvas.py 前先跑 `python -c` 查 `\x08`：`cat -A | grep "^H"` 会给假阳性，别信它。
-- **本段补丁只在本机语义下成立**：`shortName()` 是打在外部技能 `json-prompt-visualizer` 里的，没跟着本包分发。别人拿到本包时 canvas.py 是原版，框头会退化成「物体」统一名字——不影响出图，只影响画布可读性。
 
 ### G36 「层」必须满幅，并且要在主体块里重写一遍（102 v1 事故）
 

@@ -195,7 +195,7 @@ def to_nai_v5(draft, mode="single_global"):
                     
     # Clean natural sentence for NAI V5 spatial guidance
     spatial_sentences = []
-    for s in txt.split('.'):
+    for s in re.split(r'(?<!\d)\.(?!\d)', txt):
         s_clean = s.strip()
         if not s_clean or "The whole picture sits" in s_clean or "One coarse visible grain" in s_clean:
             continue
@@ -259,22 +259,22 @@ def to_anima(draft, artist=""):
     for pattern, matched_tag in TAG_MAP:
         if re.search(pattern, low):
             for t in matched_tag.split(','):
-                t_clean = t.strip()
+                # 剥离 TAG_MAP 中专供 NAI 的 1.2::tag:: 权重壳，保持 Anima 裸 tag 纯净
+                t_clean = re.sub(r'^[\d\.]+::(.*?)::$', r'\1', t.strip())
                 if t_clean and t_clean not in tags:
                     tags.append(t_clean)
                     
     # 零质量词：masterpiece / very aesthetic 一律不加
     
-    # Clean natural language sentence (strictly strip 'camera', technical stops,
-    # NAI weight shells, and the MOSS exposure header)
+    # Clean natural language sentence (strictly strip 'camera', technical stops, and MOSS exposure headers)
     clean_desc = re.sub(r'\bcamera\b', 'view', txt, flags=re.I)
     clean_desc = re.sub(r'[\d\.]+::(.*?)::', r'\1', clean_desc)
+    clean_desc = re.sub(r'The (whole )?picture sits in the[^\.]*\.', '', clean_desc, flags=re.I)
     clean_desc = re.sub(r'The view is positioned[^\.]*\.', '', clean_desc, flags=re.I)
     clean_desc = re.sub(r'One coarse visible grain[^\.]*\.', '', clean_desc, flags=re.I)
-    clean_desc = re.sub(r'The (whole )?picture sits in the[^\.]*\.', '', clean_desc, flags=re.I)
     clean_desc = re.sub(r'stopping one step short of blowing out', '', clean_desc, flags=re.I)
-
-    # (?<!\d)\.(?!\d)：小数点（0.3s / 1.5 meters / 1.2::tag::）不当句号切
+    
+    # 用 (?<!\d)\.(?!\d) 切句，防止小数点（如 0.3s / 1.5m）被误切
     sentences = [s.strip() for s in re.split(r'(?<!\d)\.(?!\d)', clean_desc) if s.strip()]
     short_narrative = ". ".join(sentences[:2]) + "."
     
@@ -292,8 +292,9 @@ def to_krea2(draft, title_cn="", include_poem=False):
     clean = re.sub(r'The (whole )?picture sits in the[^\.]*\.', '', clean, flags=re.I)
     clean = re.sub(r'stopping one step short of blowing out', '', clean, flags=re.I)
     clean = re.sub(r'The camera is positioned[^\.]*\.', '', clean, flags=re.I)
-
-    # 同 to_anima：小数点不当句号切
+    # Anima 的 1.2::phrase:: 权重壳在 Krea 2 里没有意义，剥成普通词组
+    clean = re.sub(r'[\d\.]+::(.*?)::', r'\1', clean)
+    
     sentences = [s.strip() for s in re.split(r'(?<!\d)\.(?!\d)', clean) if s.strip()]
     narrative_prose = ". ".join(sentences) + "."
     
