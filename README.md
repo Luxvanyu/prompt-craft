@@ -4,6 +4,15 @@
 
 规则全部来自 174 张出图实验（G1–G98 编号，每条带实测数值），不是审美偏好。合并自 `moss-replica` 与 `aesthetic-core` 两个包。
 
+支持 **MOSS / Anima / NAI v5 / Krea 2**（另可迁 Midjourney / SD / Flux 的通用写法），含七维起草、十三道交付前自检、先验解绑与物理光学、九期进阶工程。
+
+> **两个版本**
+> - 当前分支 `main` = **完整版**：41 文件，十三道关，九期进阶工程（先验解绑 / 大动态格斗 / 双人战术对峙 / 介质光学 / 战损物理 / 双色温 / 极端机位 / 多格分镜 / 无人空景）。
+> - [`lite` 分支](https://github.com/Luxvanyu/prompt-craft/tree/lite) = **轻量版**：16 文件、十道关、`SKILL.md` 只有 246 行，适合想自己往里加东西时当起点。
+>   ```bash
+>   git clone -b lite https://github.com/Luxvanyu/prompt-craft.git prompt-craft-lite
+>   ```
+
 ---
 
 ## 1. 装到哪里
