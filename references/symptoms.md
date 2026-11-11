@@ -6,24 +6,6 @@
 
 ---
 
-## 0 进阶九期速查（找不到就从这里进）
-
-| 你的问题长这样 | 去这篇 | 编号 |
-|---|---|---|
-| 想要的元素被模型先验顶掉（光环/头纱/兽耳/抓杯），越写越跑 | `references/decoupling.md` | P1 |
-| 格斗/大动态/腾空/挥击老是肢解、多手多脚 | `references/action-and-motion.md` | P2 |
-| 两个人同框就黏手、谁碰谁说不清、目光串台 | `references/multi-character.md` | P3 |
-| 水面倒影、玻璃反光、烟尘雾、水下、长曝——介质不对 | `references/medium-and-optics.md` | P4 |
-| 战损/破损/机能装束写得像贴纸，没有受力逻辑 | `references/battle-damage-and-couture.md` | P5 |
-| 冷暖双色光打架、一边橙一边蓝只出脏色 | `references/mixed-lighting-and-split-tones.md` | P6 |
-| 大宽幅/极低机位/极端透视撑不住，画面空半边 | `references/cinematic-geometries.md` | P7 |
-| 多格漫画、上下格对不上、跨格人物走形 | `references/storyboard-and-continuity.md` | P8 |
-| 无人空景没有尺度感、巨物像模型 | `references/scenery-and-scale.md` | P9 |
-
-P1–P9 不占 G 编号：G 是「单张图的世界逻辑」，P 是「一类题材的工程做法」。先按 A–H 症状表定位，定不下来再查上表。
-
----
-
 ## A 人物
 
 | 症状 | 先量什么 | 改哪一句 | 规则 |
@@ -108,7 +90,7 @@ P1–P9 不占 G 编号：G 是「单张图的世界逻辑」，P 是「一类�
 |---|---|---|---|
 | 颗粒没了 | — | `--intent` 无关；检查负面里有没有 `grainy / noise / film grain / speckle / blurry`（会连颗粒一起抹掉） | 关 5 |
 | 印刷网点/riso 完全出不来 | — | 判死：网点族在本模型上不可做，从配方表移除 | G31 |
-| 像 3D 渲染 | `flat` > 0.7 但无颗粒 | 补颗粒层 + 材质写可见行为（湿发成束、皮革折面亮带） | 材质字典 |
+| 像 3D 渲染 | `soft` > 0.7 但无颗粒 | 补颗粒层 + 材质写可见行为（湿发成束、皮革折面亮带） | 材质字典 |
 | 材质是均匀的场 | — | 质感必须是「可数的单元」，亚像素纹理（<1/100 画面宽）写不出来 | G31 |
 | 名画融合变成大杂烩 | — | 点名作品（`painted the way Van Gogh painted the sky in The Starry Night`），点名后删掉自己的细节 | G14 |
 
@@ -125,8 +107,7 @@ P1–P9 不占 G 编号：G 是「单张图的世界逻辑」，P 是「一类�
 | `p1` | < 0.10 | 超 = 黑位抬起，发灰 |
 | `sat` | ≥ 0.16 | 不够 = 整张没颜色 |
 | `lit − shadow` | ≥ 0.45 为理想 | 反转 = 亮部比暗部还淡，气氛全错（107 是合法例外） |
-| `soft` | < 0.65 | 超 = 硬光退化成阴天（soft 是 1 − strong，两者恒和 1） |
+| `soft` | < 0.65 | 超 = 硬光退化成阴天 |
 | `strong` | > 0.10 或 soft < 0.65 | 都低 = 没有硬边 |
-| `flat` | 0.35–0.55 | 超 = 大范围 bloom/雾；低 = 全图硬边 |
 
 **注意**：`lit / shadow` 是**饱和度的平均**，不是明度。判断明度用 `mean / dark / mid / bright`。

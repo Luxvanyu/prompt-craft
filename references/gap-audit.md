@@ -118,25 +118,7 @@
 | 开关表（写实 / 赛璐璐 / 版画 / 水墨 / 油画） | `style-heads.md`：12 个主头 + 6 层质感 + 互斥组合纪律 |
 | 预算表（一张图给多少字） | `word-budget.md`：三档总预算 + 八段切分 + 超预算删除顺序 |
 | 失败对照表（症状 → 改哪句） | `symptoms.md`：7 大类症状表 + 通用判定阈值 |
-| 正向/反向模板（填空式入口） | `entry.md`：00 三问 + 01–08 八槽 + 09/10 两道闸 + 预填 y 梯子 + 人物 bbox 五档 + 15 秒自检 |
-
----
-
-## 四之二、九期进阶工程的入口（P1–P9）
-
-G 编号管「一张图的世界逻辑」，P 编号管「一类题材的工程做法」，两者不互相替代。九篇都在 `references/`，从 `symptoms.md` 顶部「0 进阶九期速查」也能进。
-
-| 编号 | 文档 | 一句话边界 |
-|---|---|---|
-| P1 | `decoupling.md` | 想要的元素被模型先验顶掉时，怎么在正向空间里重占位 |
-| P2 | `action-and-motion.md` | 大动态/格斗：单瞬间、力线、被裁肢体的合法性 |
-| P3 | `multi-character.md` | 双人以上：接触点、视线分离、数量锚定 |
-| P4 | `medium-and-optics.md` | 水/玻璃/烟尘/水下/长曝：介质怎么成像 |
-| P5 | `battle-damage-and-couture.md` | 战损三级与机能装束的受力逻辑 |
-| P6 | `mixed-lighting-and-split-tones.md` | 双色温：两套光的边界与中性过渡带 |
-| P7 | `cinematic-geometries.md` | 21:9 / 极端机位 / 极端透视的画面填充 |
-| P8 | `storyboard-and-continuity.md` | 多格分镜与跨格一致性 |
-| P9 | `scenery-and-scale.md` | 无人空景的尺度锚与巨物感 |
+| 正向/反向模板（填空式入口） | `entry.md`：00–10 十一个槽位 + 预填 y 梯子 + 人物 bbox 五档 + 15 秒自检 |
 
 ---
 

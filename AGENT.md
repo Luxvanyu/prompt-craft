@@ -6,13 +6,13 @@
 
 ## 三十秒版
 
-1. 读 `references/entry.md`，按「00 三问 → 01–08 八槽 → 09/10 两道闸」填完 → 得到一份 `draft.json`
+1. 读 `references/entry.md`，填十一个槽位 → 得到一份 `draft.json`
 2. `python scripts/preview.py draft.json --out layout.png` → 看人物有没有压中线
-3. `python scripts/lint.py draft.json` → 十三道关，退出码 1 就是有 FAIL
+3. `python scripts/lint.py draft.json` → 十道关，退出码 1 就是有 FAIL
 4. 编译出图
 5. 出图不对：`probe.py` 量数值 → `references/symptoms.md` 找症状 → 只改那一句
 
-普通场景默认写**纯 caption**（`{"caption": "..."}`）；整份长度按 `references/word-budget.md` 三档（紧 450–550 / 标准 600–800 / 宽 850–1100），**单个 character 块** 200–320 词。不要一上来就 Layout。
+普通场景默认写**纯 caption**（`{"caption": "..."}`，200–320 词），不要一上来就 Layout。
 
 ---
 
@@ -43,10 +43,9 @@
 ## 打包内容
 
 ```
-SKILL.md                  入口（七维决策 + 反默认 + 模型翻译 + 十三道自检）
-references/entry.md       从零起草（推荐入口，八槽 + 三问 + 两闸）
-references/aesthetic.md   审美内核正文（为什么不好看 + 七维哲学层）
-references/aesthetic/     附录 A–I 九篇（明度/构图/色彩/材质/瞬间/配方/翻译/风格提取/批评），按需加载
+SKILL.md                  入口（七维决策 + 反默认 + 模型翻译 + 自检）
+references/entry.md       从零起草（推荐入口，十一槽）
+references/aesthetic.md   审美内核（为什么不好看 + 12 配方 + 风格提取 + 批评法）
 references/style-heads.md 12 个风格主头 + 6 层质感
 references/word-budget.md 字数预算
 references/composition.md 景别 / 视角 / 构图
@@ -54,22 +53,10 @@ references/symptoms.md    症状 → 改哪句
 references/moss-rules.md  MOSS 实测规则正文 + 索引 G1–G98
 references/casebook.md    G1–G98 实测证据
 references/gap-audit.md   缺口台账
-references/decoupling.md                [P1] 先验解绑协议
-references/action-and-motion.md         [P2] 大动态与格斗库
-references/multi-character.md           [P3] 双人战术对峙
-references/medium-and-optics.md         [P4] 介质成像与物理光学
-references/battle-damage-and-couture.md [P5] 战损物理与机能装束
-references/mixed-lighting-and-split-tones.md [P6] 混合光与双色温分裂
-references/cinematic-geometries.md      [P7] 21:9宽银幕与极端机位
-references/storyboard-and-continuity.md [P8] 分镜叙事与多格漫画
-references/scenery-and-scale.md         [P9] 无人空景与静物尺度
 scripts/probe.py          单张实测
-scripts/lint.py           十三道关自检
-scripts/verify.py         参考图 vs 出图：逐项对照 + 六类判据 + 三联色差热图
+scripts/lint.py           十道关自检
 scripts/preview.py        布局预览
 scripts/compile_prompt.py 编译成官方格式
-scripts/translate.py      多引擎通用转译器（MOSS / NAI v5 / Anima / Krea 2）
-scripts/render_krea2_html.py Krea 2 独立渲染器
 ```
 
 完整说明见 `README.md`。

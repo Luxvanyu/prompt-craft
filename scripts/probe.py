@@ -4,7 +4,7 @@
 
 用法:
     python probe.py <图片路径>
-    python probe.py <图片路径> --patch 0.40,0.28,0.52,0.42@dress
+    python probe.py <图片路径> --patch 0.40,0.28,0.52,0.42=dress
 
 输出段落说明:
     size            宽高
@@ -16,9 +16,8 @@
     rgb             全图平均 RGB
     sat/lit/shadow  全图 / 亮部 top20% / 暗部 bottom25% 的平均饱和度
                     （lit>shadow = 硬太阳正午；shadow>lit = 暗处更浓，如皮革、潮湿）
-    soft            梯度 >0.08 之外的占比，即 1 - strong（与 strong 互补，和为 1）
+    soft            梯度 <0.02 的像素占比（>0.55 大范围 bloom/雾，<0.35 硬光硬边）
     strong          梯度 >0.08 的像素占比（边缘密度）
-    flat            梯度 <0.02 的像素占比（>0.55 大范围 bloom/雾，<0.35 硬光硬边）
     hex 16x11       粗色彩网格，直接读主色，避免「天蓝/青灰」误判
 """
 import sys
@@ -58,10 +57,8 @@ def probe(path, patches=None):
 
     gy, gx = np.gradient(lum)
     gm = np.hypot(gx, gy)
-    # flat = 大范围平缓占比（雾/bloom 诊断，独立阈值）；soft = 1 - strong（与 strong 互补）
-    _strong = (gm > .08).mean()
-    print('soft %.3f strong %.3f' % (1.0 - _strong, _strong))
-    print('flat %.3f' % (gm < .02).mean())
+    print('soft %.3f strong %.3f' % ((gm < .02).mean(), (gm > .08).mean()))
+
     print('hex 16x11:')
     sm = im.resize((16, 11), Image.BOX)
     for row in np.asarray(sm).astype(np.uint8):
@@ -79,9 +76,9 @@ def probe(path, patches=None):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
+    if len(sys.argv) < 2:
         print(__doc__)
-        sys.exit(0)
+        sys.exit(1)
     patches = {}
     args = sys.argv[2:]
     for i, arg in enumerate(args):

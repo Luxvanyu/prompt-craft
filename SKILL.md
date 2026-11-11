@@ -1,6 +1,6 @@
 ---
 name: prompt-craft
-description: "任何「把想画的东西写成提示词」的任务都从这里进：先定七维（瞬间→明度→光→空间→色彩→材质→收尾），再按目标模型翻译成可编译的写法，最后过十三道自检。完整包含九期进阶工程：先验解绑、大动态格斗、双人战术对峙、介质与物理光学、战损物理与机能装束、双色温分裂、21:9与极端机位、多格漫画分镜、无人空景与尺度标定。当用户要写/改/升级图像提示词（MOSS / Anima / NAI / Krea 2 / Midjourney / SD / Flux / 即梦 / 可灵），说「这张图好单调/平庸/AI 味/没设计感」，问审美提升、构图、打光、配色、氛围、电影感、摄影感，贴参考图要「学这个风格」「复刻这张」，或贴回出图说「不对/不像/机位错了」时加载。核心原则：先测再写、写完自检、出图验收，规则是诊断工具不是模板。"
+description: "任何「把想画的东西写成提示词」的任务都从这里进：先定七维（瞬间→明度→光→空间→色彩→材质→收尾），再按目标模型翻译成可编译的写法，最后过十道自检。当用户要写/改/升级图像提示词（MOSS / Anima / NAI / Midjourney / SD / Flux / 即梦 / 可灵），说「这张图好单调/平庸/AI 味/没设计感」，问审美提升、构图、打光、配色、氛围、电影感、摄影感，贴参考图要「学这个风格」「复刻这张」，或贴回出图说「不对/不像/机位错了」时加载。含：七维决策顺序与量化参数、12 个配方、12 个风格主头、景别/视角/构图表、字数预算、症状→改哪句索引、G1–G98 实测硬规则索引（尺寸标定、介质成像、印刷套印、序列一致性）、十道自检脚本与测图脚本。核心原则：先测再写、写完自检、出图验收，规则是诊断工具不是模板。"
 ---
 
 # 提示词工坊（prompt-craft）
@@ -15,7 +15,7 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 
 | 你现在的情况 | 直接跳 |
 |---|---|
-| 从零写一份提示词 | `references/entry.md`（八槽 + 三问 + 两道闸，填完就是草稿） |
+| 从零写一份提示词 | `references/entry.md`（十一个槽位填完就是草稿） |
 | 有草稿，想变好看 | 本文档「七维决策」第 1–7 节 |
 | 不知道用什么调子 | `references/style-heads.md`（12 个主头 + 6 层质感） |
 | 不知道写多长 | `references/word-budget.md`（三档预算 + 八段切分 + 删减顺序） |
@@ -24,30 +24,6 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 | 贴了参考图要复刻 | 先 `scripts/probe.py` 量，再 `references/casebook.md` 找同类 |
 | 想知道某条规则凭什么 | `references/casebook.md`（G1–G98 全部实测证据） |
 | 想看还有什么题材没测过 | `references/gap-audit.md`（已验证 / 判死 / 不做） |
-| 出现光环/抓杯/头纱等先验污染 | `references/decoupling.md`（先验解绑与负向阻断协议） |
-| 写大动态/动作格斗/空战羽翼 | `references/action-and-motion.md`（四大相位 + 双手闭环 + 羽翼气动学） |
-| 写双人对峙/兵刃交锋/并肩互动 | `references/multi-character.md`（四手全清点 + 特征防火墙 + 接触点能量锚） |
-| 写倒影/雨窗/焦散/羽毛透光 | `references/medium-and-optics.md`（倒置证据链 + 介质归属律 + 纯物理光学） |
-| 写战损破甲/断羽/机能武装 | `references/battle-damage-and-couture.md`（三级战损体系 + 机能四层穿搭法） |
-| 写多光源/双色温分裂/霓虹夜景 | `references/mixed-lighting-and-split-tones.md`（主副光权力阶梯 + 暗部脊梁隔离） |
-| 写21:9宽画幅/60度陡峭俯拍 | `references/cinematic-geometries.md`（翼展全屏填塞 + 俯拍四条事实） |
-| 写四格漫画/分镜叙事/多图一致 | `references/storyboard-and-continuity.md`（四格景别语法 + 跨图角色硬锚定） |
-| 写无人空景/静物器物/尺度标定 | `references/scenery-and-scale.md`（建筑模数当尺子 + 厘米级否定 + 斜影骨架） |
-| 找不到上面哪一行对得上 | `references/symptoms.md` 顶部「0 进阶九期速查」（P1–P9 一句话边界） |
-
----
-
-### 编号体系怎么读
-
-| 前缀 | 管什么 | 在哪 |
-|---|---|---|
-| `00–10` | entry.md 的起草槽位与闸门 | `references/entry.md` |
-| `G1–G98` | 一张图的世界逻辑（实测证据编号） | 索引 `moss-rules.md`，证据 `casebook.md` |
-| `P1–P9` | 一类题材的工程做法（九期进阶） | 九篇独立文档，入口见 `symptoms.md` 顶部 |
-| `关 1–13` | lint.py 交付前十三道自检关（关 13 为美学质感与反八股巡检，全部 WARN） | `scripts/lint.py` |
-| `附录 A–I` | 九个审美专题，已独立成篇 | `references/aesthetic/a-*.md` … `i-*.md` |
-
-> P 与 G 不互斥：先用 P 选对题材做法，再用 G 检查这张图的世界逻辑。
 
 ---
 
@@ -59,50 +35,107 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 
 ---
 
-## 七维决策（摘要；完整版见 `references/aesthetic.md`）
+## 七维决策（顺序不能乱）
 
-顺序不能换，每一维必须落一个**明确选择**，不许「看情况」：
+明度决定构图能不能立住，光决定明度，空间决定光能不能衰减，色彩是明度之上的一层，材质是光与色彩的接收面，收尾是最后一层薄膜。倒着做就会互相打架。
 
-| # | 维 | 一句话 | 落到提示词里的形态 |
-|---|---|---|---|
-| 1 | **瞬间** | 这一秒发生了什么？一张图只讲一件事 | 一个动作 + 一个朝向 |
-| 2 | **明度结构** | 暗/中/亮各叫什么、各占多少 | 第一句定调 + 三档面积 |
-| 3 | **光** | 从哪来、落在哪三处、死在哪 | 光源方位 + 衰减半径 |
-| 4 | **空间与镜头** | 机位距离 + 主体占画高分数 | 两个数，缺一个必裁头（G85） |
-| 5 | **色彩** | 四个角色各司其职，点缀 ≤10% | 至少三个有色相的大面积 |
-| 6 | **材质** | 写**可见行为**，不写形容词 | 「布在膝盖处堆成两道褶」 |
-| 7 | **收尾** | 一句话把画面锁住 | 最亮是什么 / 最暗在哪 |
+### 1. 瞬间（Moment）
 
-> 每一维的判据、量化参数、反例、检查表在 `references/aesthetic.md` 的「七维决策」一节；
-> 配方库、风格提取、出图诊断在 `references/aesthetic/`（附录 A–I，九篇独立文件，按需加载）。**本文只做索引，不复制正文**。
+不写「场景」，写**事情发生前后 0.3 秒**。
+
+| 平均写法（死） | 瞬间写法（活） |
+|---|---|
+| a girl smiling | caught mid-laugh, eyes still on something just off frame |
+| a man in the rain | crossing the street with a folded newspaper over his head, one shoulder already soaked |
+| sitting by the window | she has just set the cup down and her hand is still open above it |
+
+判据：这句话里必须有一个**未完成的动作**或**刚留下的痕迹**。都没有，就是摆拍。
+
+### 2. 明度结构（Value plan）
+
+压成三档 darks / mids / lights，两条铁律：
+
+1. **一档主导**，占 55–70%，另两档分剩下的；绝不允许三等分。
+2. **焦点 = 最高对比处**，不是最亮处，也不是最中心处。
+
+> shadow 里最亮的亮部，必须比 light 里最暗的暗部更暗。
+
+违反它，图永远「灰、脏、糊」——阴影漏光，明度阶梯被打断，眼睛找不到形。
+
+**三档必须各给数量**（不给数量，「暗一点」会被执行成「暗一半」）：
+
+```
+The picture is low key: near black covers about half of it, the middle values hold the
+figures, and the only thing that reaches one step short of white is X.
+```
+
+### 3. 光（Light）
+
+五问答完才动笔：
+
+| 问题 | 必须给的答案 | 例子 |
+|---|---|---|
+| 光源是什么 | 具体物件（但**不要给名词**，见下） | late sun through a dirty window / a phone screen |
+| 方向 | 相对主体的方位 + 高度 | from camera left, slightly above eye line |
+| 质量 | 硬 / 半硬 / 柔 | hard-edged, with no gradient at all |
+| 色温 | 冷暖 + 相对差 | 3200K warm on skin against 6500K cold in the shadow |
+| 比例 | key:fill 与 key:background，用 stops | key:fill 8:1（3 stops），背景比 key 低 2 stops |
+
+stops→比值：0=1:1 · 1=2:1 · 2=4:1 · 3=8:1 · 4=16:1 · 5=32:1 · 6=64:1
+
+**两个必踩的坑**：
+- **不要给光源名词**。写 `tube` / `lamp` / `bulb` / `fixture` 就会被画进画面（G11/G41）。只写**落点 + 衰减 + 没照到哪里**。
+- **衰减必须写**：`the light dies within arm's reach`——这比任何「dramatic lighting」有效。
+
+### 4. 空间与镜头（Space & lens）
+
+前中后景各司其职：前景遮挡/框景（虚）· 中景主体（唯一实焦）· 后景信息（低对比、低细节、低饱和）。
+
+焦段决定心理：14–24mm 夸张纵深与不安｜35mm 叙事｜50mm 中性｜85–135mm 压缩与孤立｜200mm+ 窥视。
+
+机位高度是最被忽视的杠杆：**低机位=压迫/英雄**，眼平=平等，高机位=审判/脆弱，贴地仰拍=贴地的不安。
+
+**构图三件套（写具体位置，不写构图名词）**：
+1. 主体在哪条分数线上（`she stands four tenths of the way across the frame`）
+2. 另一侧是什么、有多空（`the right third holds nothing but pavement`）
+3. 画框切了什么（头顶余量、脚有没有出框）
+
+细节见 `references/composition.md`（景别 8 级 / 视角 5 种 / 构图 9 种 / 改构图 12 行症状表）。
+
+### 5. 色彩（Color）
+
+不做「配色方案」，做**角色分配 + 面积比**。四个角色各一个色，不许重复上岗：环境色（最大、最不饱和）/ 主体固有色 / 点缀色（最小、最高饱和）/ 中性锚。
+
+面积比默认 **60 / 30 / 8 / 2**。一个 2% 的红点能让整张灰图活；一片 40% 的红只会让画面廉价。
+
+**颜色必须落在被照亮的大面积上**（G9）——把颜色写在暗部或小物件上等于没写。阴影不要用纯黑，给一个色相偏移。
+
+### 6. 材质（Material）
+
+真实感不来自 `detailed`，来自**可见行为**：
+
+| 别写 | 写可见行为 |
+|---|---|
+| wet hair | strands clumped and stuck to the cheek, a dark water line down the neck |
+| wet shirt | the fabric gone dark and clinging, the inner layer showing through |
+| water drops | each drop carrying a pinpoint specular highlight |
+| leather | a bright band along each fold, the worn edge gone pale |
+| wooden table | grain sharper at the near edge, the far end lost in falloff |
+
+**不同材质必须不同细节级**——全图同一细节密度是 AI 味第三大成因，用景深分开最省力。
+
+### 7. 收尾（Finishing）
+
+一层薄膜，决定「这是照片」还是「这是渲染」：颗粒（尺寸/密度/分布）· halation（高对比边缘外溢 6–8px）· bloom（来源必须是画面里的光）· 暗角（只在需要压边时，且不对称）· 轻微失焦。
+
+**默认叠粗颗粒**（除非用户说不要）：
+
+```
+One coarse visible grain layer over every surface without exception, each clump two to
+three pixels across, and the grain sits over the whole frame evenly including the shadows.
+```
 
 ---
-
-## 核心美学法则（先写故事，再写物理 · 彻底杜绝机械八股）
-
-> **为什么早期或低质量提示词会沦为「工业八股文」？**
-> 因为把规则当成了死板的填空造句模板（每篇都用一模一样的开头、一模一样的句式）。
-> **真正的顶级美学（顶级光影范式盘点），本质是「先有 0.3 秒的故事切片，再有严丝合缝的物理光学」**：
-
-| 美学维度 | 哲学内核（写进画面的事实，不背诵固定句式！） | 灵动多样的表达方式（严禁千篇一律套模板） |
-|---|---|---|
-| **1. 光比与空间衰减** | 光有源头，更有明确的物理衰减；亮部与暗部拉开层次，背景向深处自然跌落。 | 可以写 `key to fill being eight to one`，也可以写 `the lantern light dies within arm's reach, leaving the far bookshelves three stops darker`，或 `the window light falls away from her shoulder and the back wall reads a full two stops darker`（衰减要能被数值或可指认的落点验证，不要用「天鹅绒般的暗影」这类形容词收尾）。 |
-| **2. 具象受光结构面** | 光不会平铺直叙地照亮整个人，而是精准切在 2–4 处有体积转折的具体材质表面。 | 自然点名受光落点（如鼻梁骨、翻折的衬衫领口、半透明的指尖、大提琴的琴弓边缘），无需死背固定引导词。 |
-| **3. 0.3 秒心流动态 + 生活物证** | 角色绝不呆板摆拍，而是处于未完成的微动作或专注心流中；周围散落着带有温度、磨损或时间痕迹的现实物证。 | 正在抽出一半的黑胶唱片、在自己的影子里画笑脸、用螺丝刀调试电路；身旁放着凝结水珠的冰饮、撕开的零食袋、插着筷子的泡面或散落的弹壳。 |
-| **4. 实体高光与暗部锚点** | 全图最亮与最暗必须落在有质感的实体物质上，把明度尺拉满且不过曝烧白。 | 最亮处落在黄铜灯座边缘、耳坠银尖、湿润的贝壳或水面星芒上（`stopping short of blowing out`）；最暗处压在桌底裂缝或靴底重影。 |
-
-> **反八股行文铁律（Anti-Formulaic Protocol）**：
-> 1. **严禁句式复读**：写多条提示词时，严禁每一篇都用相同的句式开头或结尾；根据题材自由切换叙事节奏；
-> 2. **镜头服务故事**：机位（贴地大透视、70°俯冲、帘后窥视、80%极简留白）必须由故事意境决定，绝不盲目退化回平庸的胸口平视；
-> 3. **词预算归还材质与情绪**：把字数花在胡桃木纹、棉麻透光、水面毛细涟漪、发丝微风与神态微表情上。
-
-## 角色光环非刚需与自然描写律（Halo Rule · 严禁欲盖弥彰）
-
-> **核心纪律**：
-> 1. **光环（Halo）绝不是二次元美学或高质量提示词的刚需配置**，角色默认不带光环（参考图集中的光环仅源于《蔚蓝档案》角色原作人设）。
-> 2. **严禁写防御性否定句（防「欲盖弥彰」）**：在描写常规角色时，**严禁**写诸如 `no halo`、`the space over her hair is empty air with nothing hovering or glowing` 等防御性语句！在扩散模型注意力机制中，主动提否定词反而在隐空间激活了光环的概念。
-> 3. **黄金正解**：**正常、自然地描写角色本身**。专注描写发型走向、发饰贴合（如发夹、发带、耳坠）、头部反光与微风动势，**完全不提光环二字**即可。只有当用户明确指定角色具有光环时，才描写光环。
-> 4. **修复轮例外**：如果出图**已经**长出了光环，下一轮必须改用三连否认把它压回去（形状 + 画法 + 否认，写法见 `references/moss-rules.md` G19 补充）。此时 lint 关 11 的 WARN 属于预期，不必清。**一句话：首轮不提这个词，修复轮必须否认到底——两个阶段的做法相反，别混用。**
 
 ## 反默认清单
 
@@ -134,7 +167,7 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 | 写「路面毫无细节」 | 自动补上皮线、路缘 | 认下先验再规定它的样子 | G42 |
 | 给光源名词 | 把灯画进画面 | 只写落点 + 衰减 + 未照亮区 | G41 |
 | 写比例尺 | 人物照旧撑满画面 | 给**同深度水平带的对位句**（头顶比哪个边低多少） | G54/G56 |
-| 提示词很长 | 人物被画大 1.3–2.9 倍 | 字数就是尺寸主因：**character 块** 200–320 词，整份 caption 按 `references/word-budget.md` 三档 | G64 |
+| 提示词很长 | 人物被画大 1.3–2.9 倍 | 字数就是尺寸主因：默认 200–320 词 | G64 |
 | 写「一个人走进来」这种名词组 | 先排人再上色，脸全清楚 | 要无脸就写「背对我们」 | G63 |
 | 想让图「不像 AI」而加网点/像素 | 完全出不来 | 细小重复单元是死角（G97）；能活的是错位套印、线稿排线 | G96/G97 |
 | 两个角色靠得近 | 两个头叠成一块 | 两个 bbox 上边差 ≥画高 8% + 明写空气间隙 | G93 |
@@ -158,11 +191,7 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 
 七维决策是**思考层**，不是输出层。落到具体模型时：
 
-- **MOSS-Image（官方规范对齐）**：
-  - **产物选型**：普通场景、人物写真、照片与复杂插画**一律默认使用 Caption（纯文本）**，细节丰富并不自动需要 Layout；只有在**明确文字排版（海报/封面）、多格分镜（multi_panel）或严格物体互锁**时才使用 Layout。
-  - **Caption 流程**：本地草稿写为 `{"caption":"..."}` 的 UTF-8 JSON；经 `compile_prompt.py` 编译后**输出为纯文本（Plain Text）**交付用户，直接粘贴进 MOSS 正向提示词框。
-  - **Layout 流程**：本地草稿遵循 `references/layout.md`，包含 `width`, `height`, `bbox_coord_space:"abs"`, `bbox_format:"xyxy"`, `summary`, `items` 六个顶层字段；BBox 为左上角绝对像素 `[x1, y1, x2, y2]`。
-  - **Layout 编译与交付**：运行 `python3 scripts/compile_prompt.py draft.json --output prompt.txt`。编译产物为**单行压缩 JSON（`abs_centralized` + `yxyx`，已剥离宽高元数据）**。交付时**必须在 prompt 外部单独标明所需的 `width × height` 尺寸**（如 1536×1024），因为模型正向提示词本身不含画幅尺寸。
+- **MOSS-Image**：普通场景用**纯 caption**（`{"caption":"..."}` 单键，200–320 词）；要精确物体互锁/多格/落字才用 Layout JSON。`bbox_coord_space:"abs"` + `bbox_format:"xyxy"` + 顶层 width/height。编译 `scripts/compile_prompt.py`。规则全集见 `references/moss-rules.md`。
 - **Anima / NAI**：平铺 tag 串 + 画师串位置固定；一律只给正向。
 - **Midjourney / SD / Flux**：自然语言长句 + 参数后缀（`--ar` `--stylize`），不要把 bbox 概念搬过去。
 - **视频模型（可灵/即梦/Runway）**：同一套七维，但「瞬间」改成「一个连续动作」，且必须写**不动的那些东西**当锚。
@@ -175,7 +204,7 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 
 ```
 python scripts/probe.py IMG                     # 出图后测：明度五档/近白面积/饱和方向
-python scripts/lint.py DRAFT.json               # 草稿十三道关（Layout / 纯 caption 都适用）
+python scripts/lint.py DRAFT.json               # 草稿十道关（MOSS Layout 用）
 python scripts/preview.py DRAFT.json --out L.png  # bbox 画出来看
 python scripts/compile_prompt.py DRAFT.json --output OUT.txt
 ```
@@ -201,9 +230,7 @@ python scripts/compile_prompt.py DRAFT.json --output OUT.txt
 
 **不要重写整份提示词。** 按这个顺序：
 
-1. 有参考图时先跑 `scripts/verify.py 参考图 出图 --tag 名字`——它直接给出逐项差值、
-   6×6 明度差矩阵、六类判据的诊断清单（每条带「该改哪句话」）和三联色差热图；
-   没有参考图才用 `scripts/probe.py` 单独量出图（mean / dark / mid / nw / p99 / sat / lit vs shadow / soft / strong / flat）。
+1. `scripts/probe.py` 量数值（mean / dark / mid / nw / p99 / sat / lit vs shadow / soft / strong）。
 2. `references/symptoms.md` 找症状 → 它指向「改哪一句」和对应规则编号。
 3. 只改那一句，重跑 lint，只重出一张。
 4. 新发现的机制写回 `references/casebook.md`，编号续下去。
@@ -217,25 +244,3 @@ python scripts/compile_prompt.py DRAFT.json --output OUT.txt
 - 不出图。它只负责写、验、诊断。
 - `references/casebook.md` 里所有 G 编号都是**某一台模型（MOSS-Image）的实测结论**。换模型时，G1–G98 的「机制」多半仍然成立（那是提示词语义层面的），但具体阈值（词数、bbox 放大倍数）要重新标定。
 - `references/gap-audit.md` 里标记「不做」的题材是有意的空白，不是遗漏。
-
-
----
-
-## 八大终极美学支柱（非正式观察归纳，非实测数据）
-
-> 下面八条来自对大量高完成度出图的**经验归纳**，不是 G 编号那种带出图编号的实测结论。把它当「审美方向的清单」用，具体阈值仍以 `references/casebook.md` 的实测为准。
-
-任何想要达到电影级摄影质感、消除塑料 AI 感的提示词，必须在以下八个维度中建立物理咬合：
-
-| 支柱 | 核心美学内涵 | 落地提示词具体要求 |
-|---|---|---|
-| **1. 极端视角与侵入感** | 坚决打破平庸胸口平视；根据情绪选择极端侵入机位。 | 贴地低视角大鞋底透视（Foreshortening）/ 70°大俯冲高空视差 / 倒悬平躺视线 / 隔着门帘与树丛的窥视视角。 |
-| **2. 尺度张力与崇高感** | 用浩瀚环境压出存在感。**注意 MOSS 的硬限制**：画面里只要有人，模型就把她排到至少 1/3 画面高，小于 1/3 的比例句基本无效（G25 实测，91/92 号）。 | ✅ 可行：不画人，只画人的痕迹（空船、被褥褶皱、插在岸边的桨）→ 环境随便多浩瀚。
-⚠️ 画人时：按「她占 1/3 高」设计构图，把她当既定条件用（如 1/3 高的剪影压在 2/3 的巨云下）。
-❌ 不要写：「她只占画面 5%」——这句会被无视，且容易吃掉构图。 |
-| **3. 复杂光学介质** | 光线必须穿透、折射或散射具体的物理介质，杜绝空气均光。 | 肥皂泡薄膜干涉彩虹光 / 沾满冷凝水滴的透明雨伞 / 浅滩涟漪菲涅尔倒影 / 湿水玫瑰与焦散 / 暴雨池塘毛细微波。 |
-| **4. 阴影叙事与光影图案** | 影子本身是独立角色，光线在平面上投射出具象几何花纹。 | 阳光穿过铁丝网在墙面留下菱形格栅影 / 在自己的投射影子里画笑脸 / 窗棂投下的万花筒几何光毯（Gobo Pattern）。 |
-| **5. 真实生活物证链** | 道具带使用磨损、温度与时间流动，**但数量按 3–6 件算**——每件都要承担一句叙事，加元素只会变吵。 | 地面上散落的黄铜弹壳与黑胶唱片 / 撕开的零食袋与未吃完的泡面插筷 / 沾满水汽的毛巾 / 雪地雪橇滑痕与靴印。 |
-| **6. 专注心流状态** | 捕捉角色全神贯注于某项专业任务、不看镜头的忘我瞬间。 | 精密螺丝刀调试电路板 / 钢琴琴键指尖起伏 / 调整半透明薄纱手套 / 举起相机对准镜头外的观者。 |
-| **7. 平面构成与破框** | 结合现代平面设计与排版艺术，破除常规画框束缚。 | 饱和色块背景中肢体与发丝出框 / 拍立得胶片边框 / 宽银幕电影上下留白与手写字卡。 |
-| **8. 环境光绝对统治** | 环境统治色彻底吃透人物固有色，可伴随单色纯色刺破。 | 暮色金光染透整个画面与衣料 / 雨夜冷蓝吃掉一切，唯独留一抹纯红火星。 |

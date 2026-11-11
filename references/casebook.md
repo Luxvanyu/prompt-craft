@@ -1,11 +1,9 @@
 # 规则实录 G21–G98（casebook）
 
-> 这里是**证据层**：每条规则当时的实测数值、翻车现象、正解句式。
+> 这里是 SKILL.md 拆出来的**证据层**：每条规则当时的实测数值、翻车现象、正解句式。
+> 主文件 `SKILL.md` 里有全部 67 条规则的**一行摘要 + 索引**；要动手改稿、或想知道
+> 「这条为什么成立」，按索引跳到本文件对应小节。
 >
-> **G21–G98** 的主条在本文件里，按编号顺序往下翻。
-> **G1–G20、G24–G26、G65、G83、G85** 的正文小节在 `references/moss-rules.md`（同一份文件里的
-> 「世界逻辑与故事」「尺寸四把尺」等节），本文件只保留它们的实测痕迹。
-
 > 编号不连续是历史原因（按实测时间编号）。同一编号出现多次＝同一机制后来的补充实测。
 
 ### G21 人物尺寸的实测偏差：写多少它画多大，但 bbox 会被放大（86 号实测，2026-11-06）
@@ -221,14 +219,12 @@
 
 每条提示词交付 = `NN-名字.json`（草稿）+ `NN-名字.txt`（编译产物）+ `NN-notes.json`（中文参考）+ `NN-名字-canvas.html`（可拖画布）。
 
-生成画布（**外部技能** `json-prompt-visualizer`，已装在本机；本包只依赖、不分发）：
+生成画布（技能已装在 `C:\Users\Administrator\.dsh\skills\json-prompt-visualizer\`）：
 ```
-python "C:/Users/Administrator/.dsh/skills/json-prompt-visualizer/scripts/canvas.py" NN.json --notes NN-notes.json --image 出图.png -o NN-canvas.html
-# 注意：canvas.py 不在本 skill 的 scripts/ 里，属于外部技能 json-prompt-visualizer；
-# 本包只依赖、不分发。缺这个技能时交付四件套降级为三件（json/txt/notes.json）。
+python scripts/canvas.py NN.json --notes NN-notes.json --image 出图.png -o NN-canvas.html
 ```
 
-**`notes.json` 的第一个分句就是框头显示的名字。**格式 `{"summary_zh": "...", "items":[{"caption_zh": "石拱桥——一座横跨……"}]}`，`caption_zh` 用 `——` 隔开「短名」与「描述」。**上面的绝对路径是本机写法**，换机器时改成你自己 skills 目录下的对应路径。另外这个 `shortName()` 补丁只打在本机那份 canvas.py 上，**没有跟着本包分发**——别人 clone 拿到的是原版，框头会退化成统一的「物体」，不影响出图，只影响画布可读性。
+**`notes.json` 的第一个分句就是框头显示的名字。**格式 `{"summary_zh": "...", "items":[{"caption_zh": "石拱桥——一座横跨……"}]}`，`caption_zh` 用 `——` 隔开「短名」与「描述」。已给 canvas.py 打过补丁（`shortName()`），框头从统一的「物体」改成显示这个短名，物体/人物/文字靠颜色区分。没给 notes 时退化为英文 caption 的首个分句。
 - 短名要能一眼认出是画面里哪一块（天空 / 远岸 / 石拱桥 / 桥栏钠灯 / 河面与倒影），不要写「物体1」。
 - `notes.json` 不参与编译（官方编译器不认），纯给自己看和给画布显示。
 - 改 canvas.py 前先跑 `python -c` 查 `\x08`：`cat -A | grep "^H"` 会给假阳性，别信它。

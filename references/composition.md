@@ -1,7 +1,7 @@
 # 构图与景别：选择、诊断、修改
 
 来源（2026-11-06 吸收）：
-- `qiuos/compose-this-scene.skill`（README / SKILL.md，以及它自己仓库内的 `references/composition-playbook.md`——该文件属于那个外部技能，本包没有一并附带）：以「先诊断、再给 3–5 个**意图不同**的方案、每个方案必须说出最强改善与代价」为工作法；给了 7 位摄影师的构图类比与 7 种 scene 优先项。
+- `qiuos/compose-this-scene.skill`（README / SKILL.md / references/composition-playbook.md）：以「先诊断、再给 3–5 个**意图不同**的方案、每个方案必须说出最强改善与代价」为工作法；给了 7 位摄影师的构图类比与 7 种 scene 优先项。
 - `D:\迅雷下载\景别SKILL.md`（shot-vocabulary）：景别 8 级、视角 12 种、焦点控制 6 种、画幅适配。
 - `D:\迅雷下载\构图SKILL.md`（composition-library）：构图 9 种 + 景深 5 种，且明确规定「**景别优先于构图**」「**不标注构图名称，把意图写进画面细节**」。
 

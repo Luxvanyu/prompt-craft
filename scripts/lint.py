@@ -5,22 +5,18 @@
 用法:
     python lint.py <草稿.json> [--ref 参考图] [--strict]
 
-十三道关:
-    关 1  结构       width/height 16 倍数、bbox 在画布内、label 合法、text item 带 text
-    关 2  数值       提示词里声明的明度/比例 与 参考图实测 是否一致
-    关 3  矛盾       明度词冲突、饱和方向冲突、机位词互斥、强触发 tag 组合
-    关 4  覆盖       参考图的 6 个关键特征在提示词里有没有对应描述
-    关 5  禁用       质量词、器材名、版权大词、负面词混入、中文标点
-    关 6  机位       俯仰 / 距离 / 倾斜 / 视平线 四要素是否写全
-    关 7  世界逻辑   场景方向性、一张图一件事、表情写肌肉、高调黑锚点、
-                    统一色与唯一色并存、硬光边缘、人物比例尺、道具支撑
-    关 8  曝光       明度定调句、暗部面积、烧白词、nw 红线
-    关 9  色彩落点   色相词是否落在被照亮的大面积上
-    关 10 构图落位   人物是否落在中线禁区（G65）
-    关 11 先验解绑   强先验污染切断（翅膀去光环、饮品去手拿、白裙去头纱）
-    关 12 动作与解剖 动作双手解剖闭环、透视安全笼、双人对峙四手全清点与特征防火墙
-    关 13 美学质感   微动作 + 生活物证、光比衰减层次、实体高光锚点
-                     （只对带人物或纯 caption 草稿生效；全部为 WARN，不拦交付）
+十道关:
+    关 1  结构     width/height 16 倍数、bbox 在画布内、label 合法、text item 带 text
+    关 2  数值     提示词里声明的明度/比例 与 参考图实测 是否一致
+    关 3  矛盾     明度词冲突、饱和方向冲突、机位词互斥、强触发 tag 组合
+    关 4  覆盖     参考图的 6 个关键特征在提示词里有没有对应描述
+    关 5  禁用     质量词、器材名、版权大词、负面词混入、中文标点
+    关 6  机位     俯仰 / 距离 / 倾斜 / 视平线 四要素是否写全
+    关 7  世界逻辑 场景方向性、一张图一件事、表情写肌肉、高调黑锚点、
+                  统一色与唯一色并存、硬光边缘、人物比例尺、道具支撑
+    关 8  曝光     明度定调句、暗部面积、烧白词、nw 红线
+    关 9  色彩落点 色相词是否落在被照亮的大面积上
+    关 10 构图落位 人物是否落在中线禁区（G65）
 
 选项:
     --ref 参考图.png      对参考图实测值做关 2 / 关 4 对照
@@ -46,12 +42,8 @@ for _s in (sys.stdout, sys.stderr):
 
 FAIL, WARN, OK = 'FAIL', 'WARN', 'ok'
 
-# 质量词：堆上去只加权不指路，一律当空转。
-# 注意**不在此表**的：`high contrast`（它是可验证的光比事实，见 G6，应当写）、
-# `blurry` / `out of focus`（长曝光与失焦是合法收尾，由 --intent soft 声明）、
-# `8k` / `4k`（属于分辨率声明，Krea 2 段落合法，MOSS 不需要）。
 QUALITY = ['masterpiece', 'best quality', 'very aesthetic', 'ultra-detailed',
-           'highly detailed', 'absurdres',
+           'highly detailed', 'high contrast', 'absurdres', '8k', '4k',
            'award winning', 'top quality', 'amazing quality']
 GEAR = ['contax', 'portra', 'pro 400h', 'polaroid', 'leica', 'canon eos', 'nikon',
         'sony a7', 'unreal engine', 'octane', 'blender cycles', 'redshift',
@@ -150,7 +142,6 @@ def ref_profile(path):
     grid = np.array([[lum[i * H // 6:(i + 1) * H // 6, j * W // 6:(j + 1) * W // 6].mean()
                       for j in range(6)] for i in range(6)])
     bi, bj = np.unravel_index(np.argmax(grid), grid.shape)
-    _strong = float((gm > .08).mean())
     return dict(W=W, H=H,
                 dark=float((lum < .15).mean()), mid=float(((lum >= .15) & (lum <= .75)).mean()),
                 bright=float((lum > .75).mean()), nw=float((lum > .95).mean()),
@@ -158,9 +149,7 @@ def ref_profile(path):
                 sat=float(sat.mean()),
                 lit=float(sat[lum > np.percentile(lum, 80)].mean()),
                 shadow=float(sat[lum < np.percentile(lum, 25)].mean()),
-                soft=1.0 - _strong,
-                strong=_strong,
-                flat=float((gm < .02).mean()),
+                soft=float((gm < .02).mean()),
                 brightest=(int(bi), int(bj)))
 
 
@@ -197,101 +186,6 @@ def gate10(draft, add):
             '给一条三分线：横向放一侧三分之一，竖向让头顶或脚底压到三分线')
 
 
-# ---------- 关 11 先验解绑 ----------
-def gate11(txt, draft, add):
-    """关 11 先验解绑：防止扩散模型高频先验污染（光环、手抓杯、婚纱头纱）。"""
-    low = txt.lower()
-
-    # 1. 翅膀 + 天使先验 -> 必出光环；同时禁止欲盖弥彰写 no halo / nothing hovering
-    has_wings = bool(re.search(r'\b(wings?|feathered wings?)\b', low))
-    has_angel = bool(re.search(r'\b(angel|angelic|seraph|archangel)\b', low))
-    has_defensive_halo = bool(re.search(r'\b(no halo|without halo|no floating ring|nothing hovering or glowing|nothing hovering)\b', low))
-    if has_wings and has_angel:
-        add(11, 'WARN', '画面包含羽翼并使用了 angelic/angel 统称，模型强先验极易自动长出光环（halo）',
-            'decoupling.md：删掉 angelic/angel，直接自然描写 a young woman with feathered wings，不要提光环')
-    if has_defensive_halo:
-        add(11, 'WARN', '出现了防光环的否定套话（no halo / nothing hovering），欲盖弥彰反而容易激活光环先验',
-            'SKILL.md：删掉防光环否定句，正常自然描写角色头发与发饰即可')
-
-    # 2. 饮品放胸前/双手放开 -> 自动抓杯
-    has_cup = bool(re.search(r'\b(cup|drink|boba|tea|mug|can|bottle)\b', low))
-    # 排除机位词 chest height / chest level，只匹配胸口托放承载
-    cup_on_chest = bool(re.search(r'(resting on|balanced on|wedged on|supported on|atop|against)\s+(?:her\s+)?(?:upper\s+)?(chest|bust|breasts?)', low))
-    hands_free = bool(re.search(r'\b(hands-free|hands off|without hands|without touching)\b', low))
-    hands_action = bool(re.search(r'\b(arms swing|hands at sides|hands clench|hands pushed|arms folded|hands steady|hands hold|holding)\b', low))
-    if has_cup and (cup_on_chest or hands_free) and not hands_action:
-        add(11, 'WARN', '饮品置于胸前但未为双手指定明确动作，模型会默认画成双手抓杯',
-            'decoupling.md：显式指派双手动作（如 arms swing naturally at her sides 或 hands steady the cup）')
-
-    # 3. 白裙 -> 婚纱头纱
-    has_white_dress = bool(re.search(r'\b(white dress|white gown)\b', low))
-    has_veil_leak = bool(re.search(r'\b(bridal|veil|wedding)\b', low))
-    has_no_veil = bool(re.search(r'\b(no veil|without veil|bare hair|uncovered hair)\b', low))
-    if has_white_dress and has_veil_leak and not has_no_veil:
-        add(11, 'WARN', '白裙可能被模型误认为新娘婚纱并自动生成头纱',
-            'decoupling.md：若非婚礼题材，显式声明 no veil，发型写 bare uncovered hair')
-
-
-# ---------- 关 12 动作解剖闭环与透视安全 ----------
-def gate12(txt, draft, add):
-    """关 12 动作解剖闭环与透视安全：
-    1. 持械单手攻击必须定义非持械手位置（防幽灵手臂/多肢体/悬空断剑）
-    2. 透视安全笼（防脚底板巨化/面部塌陷）
-    3. 羽翼动态物理学（防高动态中翅膀僵死挂件）
-    """
-    low = txt.lower()
-
-    # 1. 武器单手挥刺 -> 必须定义非持械手位置
-    # 用 [^\n\.]* 而不是 .* ：权重只允许在同一句内匹配，跨句命中是假阳性
-    has_weapon_action = bool(re.search(
-        r'\b(thrust|thrusts|thrusting|slash|slashes|slashing|swing|swings|swinging|pierce|pierces|draws|drawing)\b[^\n\.]*\b(blade|sword|rapier|weapon|saber)\b|\bholding\b[^\n\.]*\b(blade|sword|rapier|weapon)\b',
-        low
-    ))
-    has_free_hand = bool(re.search(
-        r'\b(left hand|right hand|other hand|free hand|counterbalance|counter-balance|guard|defensive|fist|open-palm|palm|pinned back|drawn back|at her hip|at her waist|resting on scabbard|at her side)\b',
-        low
-    ))
-    if has_weapon_action and not has_free_hand:
-        add(12, 'WARN', '画面包含单手持械/攻击动作，但未显式定义非持械手位置',
-            'action-and-motion.md：双手必须同时解剖闭环（如 left hand drawn back near hip in a counterbalance fist），封死多臂与幽灵断剑')
-
-    # 2. 透视安全笼：from below / low angle + foreshortening
-    has_extreme_persp = bool(re.search(r'\b(foreshortening|extreme perspective|dramatic perspective)\b', low))
-    has_low_angle = bool(re.search(r'\b(from below|low angle|knee level|ground level|floor level)\b', low))
-    has_face_protect = bool(re.search(r'\b(facial proportions?|proportion|intact|no ballooning|head proportions?)\b', low))
-    if has_extreme_persp and has_low_angle and not has_face_protect:
-        add(12, 'WARN', '低机位 + 透视词极易触发 B3 陷阱（脚底板巨化遮挡面部，五官拉扯变形）',
-            'action-and-motion.md：加入机位引导与面部保护约束（如 tracking along the flat plane of the blade, keeping facial proportions strictly intact）')
-
-    # 3. 动态羽翼气动状态：激烈突进/俯冲/旋身但未描述羽翼受力
-    has_high_motion = bool(re.search(r'\b(dive|diving|bursts forward|thrust|spin|slash|leap|leaping|aerial)\b', low))
-    has_wings = bool(re.search(r'\b(wings?|feathered wings?)\b', low))
-    has_wing_aero = bool(re.search(r'\b(swept|folded|flared|braking|air-brake|banked|slipstream|updraft|flattened|asymmetric|trailing)\b', low))
-    if has_high_motion and has_wings and not has_wing_aero:
-        add(12, 'WARN', '高动态/俯冲动作中包含羽翼，但未描述羽翼气动受力（折叠/刹车/侧倾）',
-            'action-and-motion.md：将羽翼升格为气动控制面（如 wings swept tightly back along spine like a falcon），避免模型画成僵硬背景贴纸')
-
-    # 4. 多人/双人对峙防崩检查（Phase 3 Multi-Character Protocol）
-    has_dual_character = bool(re.search(r'\b(two combatants|two girls|two figures|two women|rival|opponent|adversary|facing each other|facing her|facing him)\b', low))
-    if has_dual_character:
-        # 检查是否定义了对手的手部归属
-        # 排除 opponent's blade 这类属格宾语，允许在同一自然段内跨相邻单句（例如第1句立人设、第2句 Her right hand...）
-        has_rival_hand = bool(re.search(
-            r'\b(rival|opponent|adversary|other girl|other swordsman|companion)(?!\'s\b)[^\n]{0,240}\b(hand|hands|grip|grips|holding|arm|arms)\b',
-            low
-        ))
-        if not has_rival_hand:
-            add(12, 'WARN', '双人对峙/交锋场景中未明确指定对手/客体的双手位置',
-                'multi-character.md：严格执行四手全清点（Quad-Lock），双方 4 只手必须全部给出明确解剖安置，防止多臂与连体畸变')
-        
-        # 检查特征防火墙：对手是否包含排他性否定（防羽翼/光环串色）
-        has_wings = bool(re.search(r'\b(wings?|feathered wings?)\b', low))
-        has_no_wings_rival = bool(re.search(r'\b(without wings|no wings|wingless|possesses no wings)\b', low))
-        if has_wings and not has_no_wings_rival:
-            add(12, 'WARN', '主体具备羽翼但对手描写未显式包含排他性否定（without wings）',
-                'multi-character.md：对手需显式声明 without wings，切断主体的羽翼先验向对手串色渗透')
-
-
 def lint(draft, ref=None, intents=()):
     intents = set(intents or ())
     res = []
@@ -304,12 +198,10 @@ def lint(draft, ref=None, intents=()):
 
     # ---------- 关 1 结构 ----------
     if cap_only:
-        # 官方编译器只接受 {"caption": "..."}；多出的键在 compile 阶段会被拒
-        # （Error: Caption draft: unknown fields [...]），所以超出白名单一律 FAIL
-        _CAP_KEYS = {'caption'}
-        for k in sorted(set(draft) - _CAP_KEYS):
-            add(1, FAIL, 'caption 草稿里有编译器不认识的字段 %r' % k,
-                '纯 caption 草稿只留 {"caption": "..."}；宽高/items/summary/title/tags 全部删掉')
+        for k in ('children', 'parent', 'id', 'elements', 'items', 'summary'):
+            if k in draft:
+                add(1, FAIL, 'caption 草稿里不能出现字段 %r' % k,
+                    'caption 草稿只有 {"caption": "..."} 一个键')
         if len(draft['caption'].split()) < 120:
             add(1, WARN, 'caption 只有 %d 词' % len(draft['caption'].split()),
                 '纯 caption 靠自然语言承担全部信息，低于 120 词通常写不出空间关系')
@@ -344,10 +236,8 @@ def lint(draft, ref=None, intents=()):
                 add(1, FAIL, 'item %d 没有 caption' % i, '每个 item 都要有 caption')
         if not draft.get('summary', {}).get('caption'):
             add(1, FAIL, 'summary.caption 为空', 'summary.caption 是整体场景与风格，必须写')
-        # 角色名 tag：写角色名会触发先验放大（G25/G22），默认不写名字
-        # 只在用户明确要求「就是要这个角色」时才允许；此处仅提示，不强制。
-        NAME_START = re.compile(
-            r"^\s*([A-Z][\w'\-]+(\s+\([\w ]*\))?)\s*,", re.I)
+        # 角色名 tag：character caption 必须以名字开头，否则模型认不出是谁
+        NAME_START = re.compile(r'^(a|an|the|she|he|they|his|her|its|this|that)\b', re.I)
         for i, it in enumerate(draft.get('items', [])):
             if it.get('label') != 'character':
                 continue
@@ -357,10 +247,10 @@ def lint(draft, ref=None, intents=()):
                 continue
             if NAME_START.match(cap):
                 add(1, WARN,
-                    'item %d 的 character caption 以角色名开头' % i,
-                    'G25/G22：带名字的 character 实测被放大 1.8–3.6 倍，且会把整套角色先验'
-                    '（光环/画风/服装）一起拽进来。除非用户点名要某个固定角色，'
-                    '否则删掉名字，直接写「a woman in a long red coat, seen from behind」')
+                    'item %d 的角色 caption 以「%s」开头，没有角色名' % (i, cap.split()[0] if cap else ''),
+                    'E6：改成「aru (blue archive), a girl sitting...」这种「名字, 外观」结构；'
+                    '原创角色就在 caption 开头写 original character')
+
 
     # ---------- 关 2 数值 ----------
     if ref:
@@ -414,12 +304,12 @@ def lint(draft, ref=None, intents=()):
                 % (bi + 1, bj + 1, want[0], want[1]),
                 '加「the brightest patch sits in the %s %s」' % (want[0], want[1]))
 
-        # flat（梯度 <0.02 的平缓占比，与 probe.py / verify.py 同口径）
-        if ref['flat'] > 0.55 and not has(txt, SOFTW):
-            add(2, WARN, '参考平缓占比 flat %.2f（大范围 bloom/雾），提示词没写柔化' % ref['flat'],
+        # soft
+        if ref['soft'] > 0.55 and not has(txt, SOFTW):
+            add(2, WARN, '参考柔化占比 %.2f（大范围 bloom/雾），提示词没写柔化' % ref['soft'],
                 '加 bloom / haze / humid 类描述')
-        if ref['flat'] < 0.35 and has(txt, ['bloom', 'haze', 'fog']):
-            add(2, WARN, '参考平缓占比 flat 只有 %.2f（硬光硬边），提示词却写了 bloom/haze' % ref['flat'],
+        if ref['soft'] < 0.35 and has(txt, ['bloom', 'haze', 'fog']):
+            add(2, WARN, '参考柔化占比只有 %.2f（硬光），提示词却写了 bloom/haze' % ref['soft'],
                 '删掉柔化词，改成 hard edge / crisp')
 
     # ---------- 关 3 矛盾 ----------
@@ -515,17 +405,7 @@ def lint(draft, ref=None, intents=()):
     flat_intent = has(txt, ['flat plane', 'poster', 'no perspective', 'zero perspective',
                             'printed rectangle', 'no camera', 'no depth',
                             'flat graphic', 'collage', 'printed panel'])
-    # 纯 caption 草稿没有 bbox 坐标系，机位靠自然语言承担；
-    # 只缺一两项属正常，四项全缺才判 FAIL。Layout 草稿仍按四项硬卡。
-    is_caption_draft = 'items' not in draft or not draft.get('items')
-    if is_caption_draft:
-        if len(missing) == 4:
-            add(6, FAIL, '机位四要素一个都没写：%s' % '/'.join(missing),
-                "B1：至少写俯仰（eye level / from below）与距离（three steps away）两句")
-        elif missing:
-            add(6, WARN, '机位四要素缺「%s」（纯 caption 草稿，可接受）' % '/'.join(missing),
-                '想更稳就补一句可验证的画面事实，例如 eye level / three steps away')
-    elif len(missing) >= 2:
+    if len(missing) >= 2:
         if flat_intent:
             add(6, WARN, '机位四要素缺 %s，但这是平面/海报式构图，可视为有意省略' % '/'.join(missing),
                 '若想更稳，补一句「the picture is a flat plane with no perspective and no camera」')
@@ -683,53 +563,13 @@ def lint(draft, ref=None, intents=()):
     # 明度指令必须在最前 80 词内出现一次（模型只看前段）
     head = txt[:520]
     if not re.search(r'\b(dark|dim|bright|lit|shadow|light|expos|contrast|'
-                     r'high key|low key|high-key|low-key|mid tone|mid-tone|mid-tones|sunlight|daylight|moonlight|values)\b', head, re.I):
+                     r'high key|low key|mid tone)\b', head, re.I):
         add(8, WARN, '前 80 词里没有一句明度/光线的定调句，模型会退回平均亮度',
             '关 8：把"整张图的明度落在哪一档"提到 summary 开头第一句')
 
     gate9(txt, draft.get('summary', {}).get('caption', '') or draft.get('caption', ''), add)
     if not cap_only:
         gate10(draft, add)
-    gate11(txt, draft, add)
-    gate12(txt, draft, add)
-
-    
-    # ---------- 关 13 美学质感与反八股巡检（灵活语义检测，不绑定死板句式） ----------
-    # A. 动态微动作与生活物证（支持多样化自然表达）
-    has_moment_action = bool(re.search(
-        r'\b(pausing|mid-motion|mid-stride|delicately|adjusting|reaching|touching|brushing|'
-        r'tilts|tilting|leans|leaning|crouches|crouching|turns|turning|slides|sliding|cradles|'
-        r'unloops|offering|catching|holding|gripping|pressing|drawing|sketching|wiping|lifting|'
-        r'dips|dipping|pour|pouring|sips|sipping|stirring|reading|playing|fixing)\b', txt, re.I))
-    has_evidence = (
-        'physical evidence' in txt.lower() or
-        nprops >= 2 or
-        bool(re.search(
-            r'\b(condensation|steam|vapor|petal|petals|leaf|leaves|crumb|receipt|ticket|'
-            r'cup|teapot|can|record|vinyl|ripples|tracks|footprints|plate|watermelon|chime|'
-            r'ladle|basin|basket|umbrella|book|magazine|glasses|camera|lantern|candle)\b', txt, re.I))
-    )
-    if any(it.get('label') == 'character' for it in draft.get('items', [])) or is_caption_draft:
-        if not (has_moment_action and has_evidence):
-            add(13, WARN, '画面缺少「微动作交互」或「生活物证细节」，容易显得像静态立绘摆拍',
-                '加入角色正在进行的微动作（如触摸、调整、倾身）与 2–3 件带生活痕迹的场景物证')
-
-    # B. 光比衰减与层次（支持多种自然光学写法）
-    has_falloff = bool(re.search(
-        r'\b(key to fill|eight to one|four to one|dies within|falls (two|three|four) stops|'
-        r'recedes into|drops down to black|dropping cleanly to|shadow-side|triangle of .* light|'
-        r'raking light|attenuates|fades into|stops darker|into tranquil shadow|into deep shadow)\b', txt, re.I))
-    if not has_falloff and not flat_intent:
-        add(13, WARN, '光线缺少明确的衰减层次或明暗对比描述，画面容易变平',
-            '写出光线的方向、受光面与背景暗部的衰减落差（如 falls three stops under / dies within arm reach）')
-
-    # C. 实体高光锚点（支持灵活写法）
-    has_specular = bool(re.search(
-        r'\b(brightest|specular|glint|gleam|highlight|sparkle|shimmer)[^.]{0,80}'
-        r'\b(brass|silver|gold|chrome|metal|glass|water|dew|earring|hairpin|clip|rim|edge|bell|nozzle|shell|bolt|bulb|ladle)\b', txt, re.I))
-    if not has_specular and not flat_intent:
-        add(13, WARN, '缺少落在具体材质（金属/水珠/玻璃/饰品）上的高光锚点描述',
-            '点名全图最亮的一处高光落在什么具体材质物件上，把明度上限锚定住')
 
     return res
 
@@ -774,9 +614,9 @@ def gate9(txt, summary, add):
 
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
+    if len(sys.argv) < 2:
         print(__doc__)
-        sys.exit(0)
+        sys.exit(1)
     path = sys.argv[1]
     ref_p = None
     args = sys.argv[2:]
@@ -793,17 +633,15 @@ def main():
 
     print('检查 %s' % os.path.basename(path))
     if ref:
-        print('参考图 %s  明度 暗%.1f%%/中%.1f%%/亮%.1f%%  饱和 亮%.3f/暗%.3f  soft %.3f  flat %.3f  最亮格 %d行%d列'
+        print('参考图 %s  明度 暗%.1f%%/中%.1f%%/亮%.1f%%  饱和 亮%.3f/暗%.3f  soft %.2f  最亮格 %d行%d列'
               % (os.path.basename(ref_p), ref['dark'] * 100, ref['mid'] * 100,
-                 ref['bright'] * 100, ref['lit'], ref['shadow'], ref['soft'], ref['flat'],
+                 ref['bright'] * 100, ref['lit'], ref['shadow'], ref['soft'],
                  ref['brightest'][0] + 1, ref['brightest'][1] + 1))
     print()
 
-    gate_name = {1: '结构', 2: '数值', 3: '矛盾', 4: '覆盖', 5: '禁用', 6: '机位', 7: '世界逻辑',
-                 8: '曝光', 9: '色彩落点', 10: '构图落位', 11: '先验解绑',
-                 12: '动作与解剖锁定', 13: '美学质感与反八股'}
+    gate_name = {1: '结构', 2: '数值', 3: '矛盾', 4: '覆盖', 5: '禁用', 6: '机位', 7: '世界逻辑', 8: '曝光', 9: '色彩落点', 10: '构图落位'}
     nfail = 0
-    for g in range(1, 14):
+    for g in range(1, 11):
         rows = [r for r in res if r[0] == g]
         if not rows:
             print('关 %d %s：通过' % (g, gate_name[g]))
@@ -822,5 +660,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
