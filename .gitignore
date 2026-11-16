@@ -30,3 +30,6 @@ out.txt
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 法典数据（7MB，用 scripts/fetch_lexicon.py 现取）
+scripts/.lexicon/

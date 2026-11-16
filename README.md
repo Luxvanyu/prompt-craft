@@ -4,15 +4,6 @@
 
 规则全部来自 174 张出图实验（G1–G98 编号，每条带实测数值），不是审美偏好。合并自 `moss-replica` 与 `aesthetic-core` 两个包。
 
-支持 **MOSS / Anima / NAI v5 / Krea 2**（另可迁 Midjourney / SD / Flux 的通用写法），含七维起草、十三道交付前自检、先验解绑与物理光学、九期进阶工程。
-
-> **两个版本**
-> - 当前分支 `main` = **完整版**：41 文件，十三道关，九期进阶工程（先验解绑 / 大动态格斗 / 双人战术对峙 / 介质光学 / 战损物理 / 双色温 / 极端机位 / 多格分镜 / 无人空景）。
-> - [`lite` 分支](https://github.com/Luxvanyu/prompt-craft/tree/lite) = **轻量版**：16 文件、十道关、`SKILL.md` 只有 246 行，适合想自己往里加东西时当起点。
->   ```bash
->   git clone -b lite https://github.com/Luxvanyu/prompt-craft.git prompt-craft-lite
->   ```
-
 ---
 
 ## 1. 装到哪里
@@ -40,6 +31,8 @@
 │   ├── moss-rules.md                MOSS 实测规则正文 + 完整索引 G1–G98
 │   ├── casebook.md                  G1–G98 的实测实录（证据层，要判据来这里）
 │   ├── gap-audit.md                 缺口台账（已验证 / 判死 / 按规矩不做）
+│   ├── lexicon.md                   法典词典：7526 条中英词表 + 三条翻译纪律 + 词表反用法
+│   ├── scene-anatomy.md             场景串解剖：64 条成品串的六拍骨架 + 权重档位 + 三个不能照搬
 │   ├── decoupling.md                [P1] 强先验解绑协议：翅膀去光环、饮品去手拿、白裙去头纱三重切断法
 │   ├── action-and-motion.md         [P2] 大动态与动作格斗库：四大动作相位、双手解剖闭环、羽翼气动力学
 │   ├── multi-character.md           [P3] 双人战术对峙系统：四手全清点（Quad-Lock）、空间属性防火墙
@@ -56,10 +49,13 @@
     ├── compile_prompt.py            草稿 → MOSS 官方编译格式（abs+xyxy → abs_centralized+yxyx）
     ├── verify.py                    参考图 vs 出图：逐项对照 + 6×6 差值矩阵 + 诊断清单 + 三联色差热图
     ├── render_krea2_html.py         Krea 2 独立渲染器：生成带一键复制与拆解表的 HTML 海报
-    └── translate.py                 多引擎通用编译器：一键转 MOSS / NAI v5 3-tier / Anima 9-slot / Krea 2
+    ├── translate.py                 多引擎通用编译器：一键转 MOSS / NAI v5 3-tier / Anima 9-slot / Krea 2
+    ├── lexicon.py                   词表查询：中英模糊查 / --exact / --cat / --in / --scene / --neg
+    └── fetch_lexicon.py             一次性下载五部法典并建索引（写 scripts/.lexicon/，不入库）
 ```
 
 依赖：`python` + `numpy` + `Pillow`。`preview.py` 找不到字体时会自动降级，不必改。
+`lexicon.py` 需要先跑一次 `fetch_lexicon.py` 抓数据（可选，7 MB，不入库）。
 
 ---
 
@@ -182,12 +178,17 @@ python scripts/compile_prompt.py draft.json --output out.txt
 | Python 3.9+ | **必需** | 所有脚本都跑不了 |
 | numpy | **必需** | `lint.py` 直接 import 失败；`probe.py` / `verify.py` 的 `flat` 与梯度指标会退回 PIL 近似，与 lint 对不上 |
 | Pillow 9+ | **必需** | `probe.py` / `verify.py` / `render_krea2_html.py` 跑不了 |
+| 词典数据（7 MB） | 可选 | 只有 `lexicon.py` 用；不装也能读 `references/lexicon.md` 里挑好的词 |
 | json-prompt-visualizer 技能 | 可选 | 只影响 `canvas.py` 画布预览 |
 | 系统中文字体 | 可选 | 只影响 `render_krea2_html.py` 生成的 HTML 字体回退 |
 
 ```bash
 pip install numpy Pillow
+python scripts/fetch_lexicon.py   # 可选：抓法典数据，建词典索引（一次性）
 ```
+
+`fetch_lexicon.py` 从 `novelai.quicktagcloud.com` 拉五部社区法典并合成 `scripts/.lexicon/index.json`；
+数据不入库（已在 `.gitignore`），站点改版时脚本会打印五个直链供手动下载。之后 `python scripts/lexicon.py 逆光` 查词。
 
 **换机器要改的一处**：`references/casebook.md` 里 `canvas.py` 的命令写的是本机绝对路径，换成你自己 skills 目录下的对应路径即可。另外 `canvas.py` 的 `shortName()` 补丁没跟着本包分发，别人拿到的是原版——框头会退化成「物体」，不影响出图，只影响画布可读性。
 

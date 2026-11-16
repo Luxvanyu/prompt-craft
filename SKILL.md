@@ -33,6 +33,8 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 | 写21:9宽画幅/60度陡峭俯拍 | `references/cinematic-geometries.md`（翼展全屏填塞 + 俯拍四条事实） |
 | 写四格漫画/分镜叙事/多图一致 | `references/storyboard-and-continuity.md`（四格景别语法 + 跨图角色硬锚定） |
 | 写无人空景/静物器物/尺度标定 | `references/scenery-and-scale.md`（建筑模数当尺子 + 厘米级否定 + 斜影骨架） |
+| 知道要什么但叫不出名字 | `references/lexicon.md`（7526 条中英词典 + 三条翻译纪律 + 词表反用法） |
+| 想要现成场景串的结构 | `references/scene-anatomy.md`（64 条成品串的六拍骨架 + 权重档位 + 三个不能照搬的地方） |
 | 找不到上面哪一行对得上 | `references/symptoms.md` 顶部「0 进阶九期速查」（P1–P9 一句话边界） |
 
 ---
@@ -178,9 +180,11 @@ python scripts/probe.py IMG                     # 出图后测：明度五档/�
 python scripts/lint.py DRAFT.json               # 草稿十三道关（Layout / 纯 caption 都适用）
 python scripts/preview.py DRAFT.json --out L.png  # bbox 画出来看
 python scripts/compile_prompt.py DRAFT.json --output OUT.txt
+python scripts/lexicon.py 侧光                   # 差一个词叫什么：7526 条中英词典
 ```
 
-顺序固定：**预览 → 调 y → lint → 编译**。
+顺序固定：**预览 → 调 y → lint → 编译**。`lexicon.py` 是查词用的，随时可跑；
+`--scene` 出 64 条成品场景串，`--cat` 出全分类树，`--neg 词` 查这批人的负向写法。
 
 ### 手过（八条，逐条答得出来才算完）
 

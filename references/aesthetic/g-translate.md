@@ -43,15 +43,35 @@
 
 这些是 danbooru 系模型真正认识的词，不是自造词。
 
+> **只记得住这一节就够，但要查更全的，去 `references/lexicon.md`**（7526 条中英词典，
+> 来自 5 部社区法典；`python scripts/lexicon.py 逆光` 直接查）。
+> 下面的表是**从那 7526 条里筛出来的高频安全牌**，不是全部。
+
 ### 光
 
 `backlighting` `rim light` `contre-jour` `hard lighting` `soft lighting` `dappled sunlight` `god rays` `volumetric lighting` `chiaroscuro` `low key` `high key` `silhouette` `split lighting` `light from above` `candlelight` `moonlight` `neon lights` `light rays` `bloom` `halation` `lens flare` `window light` `sunbeam`
 
+补充（词典 `色彩光影` 里查得到的真词）：
+`crack_of_light`（缝隙光）`caustics`（焦散光纹）`subsurface_scattering`（次表面散射）`colored_shadow`（有色阴影）`see-through_silhouette`（透光剪影）`spotlight`（聚光灯）`sunlight` `dim_lighting`
+
 **不要用**：`cinematic lighting` `dramatic lighting` `beautiful lighting` `professional lighting`——这些是空转，模型给你平均值。
+（注：成品串里 `cinematic lighting` 出现 3 次，都是当「屏幕光/电影幕光」这个**物件**用，不是当氛围词——那种用法是合法的。）
 
 ### 构图 / 镜头
 
 `from side` `from above` `from below` `dutch angle` `close-up` `upper body` `cowboy shot` `full body` `wide shot` `negative space` `off-center` `foreshortening` `depth of field` `blurry background` `bokeh` `foreground blur` `profile` `three-quarter view` `looking away` `looking to the side`
+
+补充（词典 `视角构图/镜头视角` 32 条里对本包最有用的）：
+`from_inside`（从内往外）`from_outside`（从外往内）`from_behind` `straight-on` `sideways` `upside-down`
+`pov` `pov_hands` `pov_legs` `pov_shadow` `pov_doorway` `pov_across_table` `mirror_selfie` `view_between_legs`
+`partially_underwater_shot`（半水下镜头——水面上下各半，P4 介质篇的现成钥匙）
+
+**出画族（比「裁切」靠谱，`画面大小` 20 条里的真货）**：
+`feet_out_of_frame` `head_out_of_frame` `eyes_out_of_frame` `foot_out_of_frame` `knees_out_of_frame`
+`cropped_legs` `cropped_torso` `cropped_arms` `cropped_shoulders` `cropped_head` `cut-in` `split_crop`
+
+⚠️ 词典里**没有** `worm's_eye_view` / `bird's_eye_view` / `wide_angle` / `telephoto` / `tilt-shift` / `panorama` / `letterboxed`。
+仰拍俯拍只能用 `from_below` / `from_above`，别生造。
 
 **破对称专用**：`off-center` + `negative space`（这两个词是模型唯一稳定响应的构图标签）
 
