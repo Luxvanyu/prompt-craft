@@ -4,6 +4,8 @@
 
 规则全部来自 174 张出图实验（G1–G98 编号，每条带实测数值），不是审美偏好。合并自 `moss-replica` 与 `aesthetic-core` 两个包。
 
+**下载**：[最新发行版](https://github.com/Luxvanyu/prompt-craft/releases/latest)——`prompt-craft-v8.zip`（52 个文件，附 sha256）。也可以直接 clone 本仓库：`main` 是完整版，`lite` 分支是轻量版。
+
 ---
 
 ## 1. 装到哪里
@@ -12,6 +14,7 @@
 <skills 根目录>/prompt-craft/
 ├── SKILL.md                入口：七维决策 + 反默认清单 + 模型翻译 + 自检
 ├── references/
+│   ├── eye.md                       动笔之前：找那个不对劲的地方 / 把感受翻成物理量 / 只偷一件 / 什么时候停（1600 字，无检查项）
 │   ├── entry.md                     填空式入口：00 三问 + 01–08 八槽 + 09/10 两闸，填完就是草稿
 │   ├── aesthetic.md                 审美内核正文：为什么不好看、七维决策的哲学层
 │   ├── aesthetic/                   附录 A–I（九个专题，按需加载）
@@ -25,6 +28,8 @@
 │   │   ├── h-style-extraction.md    附录 H 风格提取（学这个风格的提取流程）
 │   │   └── i-critique.md            附录 I 批评（出图后的诊断法）
 │   ├── style-heads.md               12 个风格主头 + 6 层质感 + 互斥纪律
+│   ├── genres.md                    题材卡：只收多张样本互相印证的（现 G-01 图形海报式插画）；单张参考图走反推
+│   ├── reverse-engineer.md          反推流程（参考图 → 提示词：先量再写、色号不是色名、返图差值改哪句）
 │   ├── word-budget.md               字数预算（450–1100 词三档怎么切、超了按什么顺序删）
 │   ├── composition.md               景别 8 级 / 视角 5 种 / 构图 9 种 / 改构图症状表
 │   ├── symptoms.md                  症状 → 改哪句 → 规则编号（出图不对时看这个）
@@ -32,7 +37,8 @@
 │   ├── casebook.md                  G1–G98 的实测实录（证据层，要判据来这里）
 │   ├── gap-audit.md                 缺口台账（已验证 / 判死 / 按规矩不做）
 │   ├── lexicon.md                   法典词典：7526 条中英词表 + 三条翻译纪律 + 词表反用法
-│   ├── scene-anatomy.md             场景串解剖：64 条成品串的六拍骨架 + 权重档位 + 三个不能照搬
+│   ├── real-corpus.md               一万条真提示词的实测分布：tag 密度 / 画师数 / 质量词 / 参数基线
+│   ├── scene-anatomy.md             64 条 NAI 串的切片分析（参考用；SKILL 里不再索引，从 lexicon.md §八 进）
 │   ├── decoupling.md                [P1] 强先验解绑协议：翅膀去光环、饮品去手拿、白裙去头纱三重切断法
 │   ├── action-and-motion.md         [P2] 大动态与动作格斗库：四大动作相位、双手解剖闭环、羽翼气动力学
 │   ├── multi-character.md           [P3] 双人战术对峙系统：四手全清点（Quad-Lock）、空间属性防火墙
@@ -43,6 +49,8 @@
 │   ├── storyboard-and-continuity.md [P8] 序列叙事与漫画多格分镜：跨格角色硬锚定、BBox坐标硬隔离
 │   └── scenery-and-scale.md         [P9] 无人空景与静物尺度：建筑模数不可动物理尺、厘米级三合一锁定
 └── scripts/
+    ├── crop.py                      切块看图：九宫格 + 指定局部，放大到可辨认尺寸（反推第一步）
+    ├── look.py                      第二双眼睛：图 + 二十问发给视觉更强的模型，换回可核对答案与 UNCLEAR
     ├── probe.py                     测一张图：mean/dark/mid/nw/p1/p99/sat/lit/shadow/soft/strong/flat + 6×6 网格
     ├── lint.py                      草稿十三道关工业级自检（含先验解绑、动作解剖闭环、双人防串色、美学质感巡检）
     ├── preview.py                   把草稿的 bbox 画出来看
@@ -51,11 +59,13 @@
     ├── render_krea2_html.py         Krea 2 独立渲染器：生成带一键复制与拆解表的 HTML 海报
     ├── translate.py                 多引擎通用编译器：一键转 MOSS / NAI v5 3-tier / Anima 9-slot / Krea 2
     ├── lexicon.py                   词表查询：中英模糊查 / --exact / --cat / --in / --scene / --neg
-    └── fetch_lexicon.py             一次性下载五部法典并建索引（写 scripts/.lexicon/，不入库）
+    ├── corpus.py                    真提示词查询：概况 / --stat / --find / --show / --params
+    └── fetch_lexicon.py             一次性下载五部法典（+ `--packs` 两个图包），建索引，不入库
 ```
 
 依赖：`python` + `numpy` + `Pillow`。`preview.py` 找不到字体时会自动降级，不必改。
 `lexicon.py` 需要先跑一次 `fetch_lexicon.py` 抓数据（可选，7 MB，不入库）。
+`corpus.py` 需要先跑 `fetch_lexicon.py --packs`（可选，42 MB，不入库）。
 
 ---
 
@@ -107,6 +117,36 @@ python scripts/probe.py out.png
 ---
 
 ## 5. 脚本速查
+
+### crop.py — 切块看图
+
+反推一张参考图时，第一件事不是写提示词，也不是跑 probe，是**把图切开看**。整图扫一眼只能拿到印象，细节全是猜的。
+
+```bash
+python scripts/crop.py REF.png --grid 3 --out ./crops
+python scripts/crop.py REF.png --region hands,0.05,0.55,0.45,0.85 --region face,0.30,0.10,0.60,0.40
+```
+
+- `--grid N` 切 N×N，自带 12% 重叠（`--overlap` 可调），防止关键东西正好落在两块中间
+- `--region 名字,x0,y0,x1,y1` 全部用画幅比例，可重复多次
+- `--long` 输出长边目标像素，默认 900，只会放大不会缩小
+- 只看长边 ≥900 的块下判断；更小的细节宁可标「看不清」
+
+### look.py — 第二双眼睛
+
+我的视觉前端会把大图压到长边 ~1000px，鞘上一行十几像素宽的字、手指、绳结，在那个尺度上根本不存在。这不是「不够仔细」，是物理上看不见。`look.py` 换一个压得没那么狠的视觉模型来看同一张图。
+
+```bash
+python scripts/look.py REF.png --sop                  # 内置二十问，一次读完
+python scripts/look.py REF.png -q "左手在哪？握着什么？"
+python scripts/look.py crops/Ghip.png crops/Ghead.png -Q questions.txt
+```
+
+- 每个问题都必须是**离散、可验证**的（「几个」「在哪」「朝哪」），连续形容词问不出东西
+- 它的 system prompt 强制：只答看得见的，答不出就写 `UNCLEAR` 加「哪里看不清、为什么」，**不许用这类图通常长什么样的先验填空**
+- 用 `GEMINI_API_KEY`（本机 `.credentials.yaml` 里已有），`LOOK_MODEL` 或 `-m` 换模型
+- 它不是答案，是**第二意见**：两边一致才直接写，不一致就回去看裁切块或降粒度
+- Gemini 3 默认开思考，思考 token 会把答案挤断，脚本已带 `thinkingConfig.thinkingBudget = 0`
 
 ### probe.py — 单张实测
 
@@ -179,23 +219,27 @@ python scripts/compile_prompt.py draft.json --output out.txt
 | numpy | **必需** | `lint.py` 直接 import 失败；`probe.py` / `verify.py` 的 `flat` 与梯度指标会退回 PIL 近似，与 lint 对不上 |
 | Pillow 9+ | **必需** | `probe.py` / `verify.py` / `render_krea2_html.py` 跑不了 |
 | 词典数据（7 MB） | 可选 | 只有 `lexicon.py` 用；不装也能读 `references/lexicon.md` 里挑好的词 |
+| 图包数据（42 MB） | 可选 | 只有 `corpus.py` 用；不装也能读 `references/real-corpus.md` 里量好的结论 |
 | json-prompt-visualizer 技能 | 可选 | 只影响 `canvas.py` 画布预览 |
 | 系统中文字体 | 可选 | 只影响 `render_krea2_html.py` 生成的 HTML 字体回退 |
 
 ```bash
 pip install numpy Pillow
-python scripts/fetch_lexicon.py   # 可选：抓法典数据，建词典索引（一次性）
+python scripts/fetch_lexicon.py           # 可选：抓法典数据，建词典索引（一次性）
+python scripts/fetch_lexicon.py --packs   # 可选：再抓两个图包，给 corpus.py 查完整提示词
 ```
 
 `fetch_lexicon.py` 从 `novelai.quicktagcloud.com` 拉五部社区法典并合成 `scripts/.lexicon/index.json`；
 数据不入库（已在 `.gitignore`），站点改版时脚本会打印五个直链供手动下载。之后 `python scripts/lexicon.py 逆光` 查词。
+加 `--packs` 会把两个图包（10958 条完整提示词 + 参数）也下到同一目录，`python scripts/corpus.py` 就能查
+「别人这个位置写的什么」；图包不进索引，`--packs-only` 可以只下图包不重建索引。
 
 **换机器要改的一处**：`references/casebook.md` 里 `canvas.py` 的命令写的是本机绝对路径，换成你自己 skills 目录下的对应路径即可。另外 `canvas.py` 的 `shortName()` 补丁没跟着本包分发，别人拿到的是原版——框头会退化成「物体」，不影响出图，只影响画布可读性。
 
 **已知限制**：
 
 - 所有阈值（词数、bbox 放大倍数、`flat` 的 0.35/0.55）都是在 MOSS-Image 上标定的。换模型时 G 编号的**机制**多半仍成立，但数值要重新测。
-- `lint.py` 关 13 是启发式检查（正则 + 关键词表），宁可多报也不错放，WARN 不必逐条消掉。
+- `lint.py` 关 13 是启发式检查（正则 + 关键词表）：会误报也会漏报，全部只是 WARN，不必逐条消掉——**它是提示灯，不是及格线**。为了让灯灭而往提示词里塞它认识的短语，是本包最不希望你做的事（那样等于用脚本亲手制造八股）。
 - `verify.py` 的 `getdata()` 接口在 Pillow 14 会移除，本包已屏蔽告警，但届时需要换写法。
 
 ---

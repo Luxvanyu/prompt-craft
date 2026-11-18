@@ -47,6 +47,14 @@ for _s in (sys.stdout, sys.stderr):
 FAIL, WARN, OK = 'FAIL', 'WARN', 'ok'
 
 # 质量词：堆上去只加权不指路，一律当空转。
+#
+# 【适用范围 — 重要】这条禁令是 **MOSS 专属**，不是普适真理。
+# 10958 条真实 NAI 提示词里，v4.5 有 81.5% 写了 `best quality`、63.0% 写了
+# `very aesthetic`——NAI 吃这套，并且用户自己的 NAI 画师串模板里就带着它们。
+# 本脚本的设计对象是 MOSS 草稿，所以默认按 MOSS 口径 FAIL；给 NAI / SD / Flux
+# 检查时按模型自行放宽，不要把这份 FAIL 当成「质量词没用」的证据。
+# 数据见 references/real-corpus.md 第 3.1 节。
+#
 # 注意**不在此表**的：`high contrast`（它是可验证的光比事实，见 G6，应当写）、
 # `blurry` / `out of focus`（长曝光与失焦是合法收尾，由 --intent soft 声明）、
 # `8k` / `4k`（属于分辨率声明，Krea 2 段落合法，MOSS 不需要）。
@@ -585,13 +593,15 @@ def lint(draft, ref=None, intents=()):
             'G1：明写 the bench faces the road, her back is to the wall')
 
     # G2 故事道具
-    props = ['footprint', 'ticket', 'bottle', 'notice', 'shoe', 'cup', 'letter',
+    props = ['footprint', 'ticket', 'bottle', 'notice', 'shoe', 'cup', 'mug', 'letter',
              'suitcase', 'umbrella', 'cigarette', 'can ', 'newspaper', 'bucket',
              'hose', 'price card', 'boots', 'jar', 'apron', 'basket', 'crate',
              'tray', 'plate', 'basin', 'towell', 'sack', 'box', 'twine', 'shears',
              'lantern', 'lamp', 'branch', 'prints', 'print', 'boot print',
              'snowshoe', 'walking stick', 'rope', 'pail', 'mat', 'card', 'tag',
-             'straw hat', 'sun hat', 'hat', 'ribbon', 'flower', 'stem', 'bunch']
+             'straw hat', 'sun hat', 'hat', 'ribbon', 'flower', 'stem', 'bunch',
+             'napkin', 'saucer', 'spoon', 'chopsticks', 'bowl', 'towel', 'cloth',
+             'rag', 'coaster', 'kettle', 'teapot', 'envelope', 'glass', 'key', 'coin']
     nprops = sum(1 for p in props if p in txt)
     if any(it.get('label') == 'character' for it in draft.get('items', [])) and nprops < 2:
         add(7, WARN, '画面里只有人，没有讲故事的证据物（脚印/票/空瓶/告示）',
@@ -605,7 +615,8 @@ def lint(draft, ref=None, intents=()):
             r'one quarter|one third|two thirds|two fifths|three fifths|'
             r'three quarters|a seventh|a sixth|a twelfth|a sixteenth|an eighth|a twentieth|'
             r'one twelfth|one sixteenth|one eighth|one twentieth|sixteen per cent|twelve per cent|'
-            r'thirty per cent|forty per cent|half the height)[^.]{0,40}'
+            r'thirty per cent|forty per cent|half the height|half the frame|'
+            r'half of the frame|about half|roughly half|just under half|just over half)[^.]{0,40}'
             r'(picture|frame|height|width)', txt, re.I)
         rel = has(txt, ['empty beside', 'wider than she is', 'twice her',
                         'taller than the bench', 'metres above her',
@@ -695,39 +706,80 @@ def lint(draft, ref=None, intents=()):
 
     
     # ---------- 关 13 美学质感与反八股巡检（灵活语义检测，不绑定死板句式） ----------
+    # 说明：这一关只做「提示灯」，绝不允许升成 FAIL。
+    # 三个判据都是关键词匹配，检得出「词在不在」，检不出「质感好不好」。
+    # 一旦硬拦，为了过关就只能往每条提示词里塞白名单短语——脚本亲手制造八股。
+    #
+    # 两条通用豁免（收窄误报）：
+    #   阴天 / 雾 / 霾 / 强漫射 —— 本来就没有硬方向衰减与金属高光，13B/13C 不该报。
+    #   无人空景 caption —— 没有角色就谈不上「微动作」，13A 不该报。
+    # 两条词表层面的收窄（同样是收误报，不是加规则）：
+    #   13A 认「时间留下的痕迹」而不只是认物件名（dried / chipped / still wet …），
+    #       因为本包正文推荐的正是这么写，认不出就等于自打耳光。
+    #   13B 认 holds no light of its own —— 那是 entry.md 04 节给的标准句式。
+    #   2026-11-17 又放宽四处同类误报（放宽方向，判据一个都没加严）：
+    #     13B 认 dying within / two stops under（原先只认 dies within / falls N stops）；
+    #     13C 认「材质在前、brightest 在后」的语序（the brass tap is the brightest thing…）；
+    #     13A 认 resting / lingering 这类动词（原先只认 holding / touching 一族）；
+    #     G2 道具词表补 mug / napkin / saucer 等日常件（原先只认 cup，写 mug 反而算没道具）。
+    sepia_soft = has(txt, ['overcast', 'fog', 'foggy', 'mist', 'misty', 'haze', 'hazy',
+                           'cloudy', 'dense cloud', 'diffuse', 'diffused', 'flat white sky',
+                           'snowfall', 'whiteout', 'smog'])
+    # 「head height / headroom / front face / face up」是尺寸与零件词，不是人物（2026-11-17）
+    has_person = bool(re.search(
+        r'\b(she|he|her|his|hers|him|woman|man|girl|boy|person|figure|people|child|'
+        r'hands?|(?<!front )(?<!flat )face|shoulders?|head(?!\s*(?:height|room|space|above))|'
+        r'silhouette|body|crowd|passenger|worker|dancer|'
+        r'mother|father|elder|youth|stranger)\b', txt, re.I))
     # A. 动态微动作与生活物证（支持多样化自然表达）
     has_moment_action = bool(re.search(
         r'\b(pausing|mid-motion|mid-stride|delicately|adjusting|reaching|touching|brushing|'
         r'tilts|tilting|leans|leaning|crouches|crouching|turns|turning|slides|sliding|cradles|'
         r'unloops|offering|catching|holding|gripping|pressing|drawing|sketching|wiping|lifting|'
-        r'dips|dipping|pour|pouring|sips|sipping|stirring|reading|playing|fixing)\b', txt, re.I))
+        r'dips|dipping|pour|pouring|sips|sipping|stirring|reading|playing|fixing|'
+        r'rests|resting|lingers|lingering|stroking|smoothing|tucking|folding|clutching|'
+        r'glancing|half-turned|half raised|still warm in her hand)\b', txt, re.I))
+    # 「用过」的痕迹比「有什么物件」更接近这条的本意：名字可以随便换，
+    # 只要写的是时间留下的东西就算。只在 WARN 层用，别升成硬拦。
+    has_use_mark = bool(re.search(
+        r'\b(dried|drying|chipped|cracked|worn|scuffed|rusty|rusted|wilted|faded|'
+        r'stained|smudged|smeared|handprint|fingerprints?|half eaten|unfinished|'
+        r'half folded|still running|still wet|still warm|left over|left behind)\b', txt, re.I))
     has_evidence = (
         'physical evidence' in txt.lower() or
         nprops >= 2 or
+        has_use_mark or
         bool(re.search(
-            r'\b(condensation|steam|vapor|petal|petals|leaf|leaves|crumb|receipt|ticket|'
-            r'cup|teapot|can|record|vinyl|ripples|tracks|footprints|plate|watermelon|chime|'
-            r'ladle|basin|basket|umbrella|book|magazine|glasses|camera|lantern|candle)\b', txt, re.I))
+            r'\b(condensation|steam|vapor|petal|petals|leaf|leaves|crumbs?|receipt|ticket|'
+            r'cup|mug|bowl|teapot|can|record|vinyl|ripples|tracks|footprints|plate|watermelon|chime|'
+            r'ladle|basin|basket|umbrella|book|magazine|glasses|camera|lantern|candle|towel|rag)\b', txt, re.I))
     )
-    if any(it.get('label') == 'character' for it in draft.get('items', [])) or is_caption_draft:
+    if any(it.get('label') == 'character' for it in draft.get('items', [])) or \
+            (is_caption_draft and has_person):
         if not (has_moment_action and has_evidence):
             add(13, WARN, '画面缺少「微动作交互」或「生活物证细节」，容易显得像静态立绘摆拍',
                 '加入角色正在进行的微动作（如触摸、调整、倾身）与 2–3 件带生活痕迹的场景物证')
 
     # B. 光比衰减与层次（支持多种自然光学写法）
     has_falloff = bool(re.search(
-        r'\b(key to fill|eight to one|four to one|dies within|falls (two|three|four) stops|'
+        r'\b(key to fill|eight to one|four to one|(dies|dying|died) (within|inside|out|before)|'
+        r'falls (two|three|four) stops|(one|two|three|four|five) stops? (under|down|darker|below)|'
         r'recedes into|drops down to black|dropping cleanly to|shadow-side|triangle of .* light|'
-        r'raking light|attenuates|fades into|stops darker|into tranquil shadow|into deep shadow)\b', txt, re.I))
-    if not has_falloff and not flat_intent:
+        r'raking light|attenuates|fades into|stops darker|into tranquil shadow|into deep shadow|'
+        r'holds no light|no light of its own|falls away from|steps? darker)\b', txt, re.I))
+    if not has_falloff and not flat_intent and not sepia_soft:
         add(13, WARN, '光线缺少明确的衰减层次或明暗对比描述，画面容易变平',
             '写出光线的方向、受光面与背景暗部的衰减落差（如 falls three stops under / dies within arm reach）')
 
     # C. 实体高光锚点（支持灵活写法）
-    has_specular = bool(re.search(
-        r'\b(brightest|specular|glint|gleam|highlight|sparkle|shimmer)[^.]{0,80}'
-        r'\b(brass|silver|gold|chrome|metal|glass|water|dew|earring|hairpin|clip|rim|edge|bell|nozzle|shell|bolt|bulb|ladle)\b', txt, re.I))
-    if not has_specular and not flat_intent:
+    _SPEC_LIGHT = r'(brightest|specular|glint|gleam|highlight|sparkle|shimmer)'
+    _SPEC_MAT = (r'(brass|silver|gold|chrome|metal|glass|water|dew|earring|hairpin|clip|rim|edge|'
+                 r'bell|nozzle|shell|bolt|bulb|ladle)')
+    has_specular = bool(
+        re.search(r'\b%s[^.]{0,80}\b%s\b' % (_SPEC_LIGHT, _SPEC_MAT), txt, re.I)
+        # 反向语序也要认：「the brass tap is the brightest thing in the picture」
+        or re.search(r'\b%s\b[^.]{0,80}\b%s' % (_SPEC_MAT, _SPEC_LIGHT), txt, re.I))
+    if not has_specular and not flat_intent and not sepia_soft:
         add(13, WARN, '缺少落在具体材质（金属/水珠/玻璃/饰品）上的高光锚点描述',
             '点名全图最亮的一处高光落在什么具体材质物件上，把明度上限锚定住')
 

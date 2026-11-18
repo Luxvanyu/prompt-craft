@@ -93,6 +93,14 @@ python3 scripts/compile_prompt.py draft.json --output prompt.txt
 
 ---
 
+### 3. 两处「宁可拆框」的地方（2026-11-18 补，来自外部反推手册的实战）
+
+**文字框：一处文字一个框，绝不合并。** 画面里有多处文字时（主标题、角标、副标题、气泡），如果把全部文字塞进**一个覆盖全图的大 `text` 框**，文字注意力会被摊薄，出图直接掉字。正确做法是每一处文字单独给贴合它位置的小 bbox，并把同区域 character 框的词数压下来，别让长篇人物描写挤占文字权重。
+
+**前景密度：成片的东西要拆出来单独给框。** 花海、落叶、飘雪、碎玻璃这类「成片且要密」的前景，只在 summary 里顺带一句会出得很稀。拆成独立 `object` 框，框里用量化写法：`a dense sweeping carpet of hundreds of curled petals, none larger than a thumbnail`。
+
+---
+
 ## 四、自检核对清单（Layout Checklist）
 
 - [ ] 画布宽高是否均为 16 的倍数？

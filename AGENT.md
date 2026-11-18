@@ -29,6 +29,8 @@
 
 **不写**：质量词、画师串、器材名、`full body`、厘米数、给设计文档看的元话语。
 
+> 其中「质量词」这条是 **MOSS 专属**，不是普适真理。10958 条 NAI 图包里 v4.5 有 81.5% 都写 `best quality`——NAI 吃这套，MOSS 不吃。换个模型写稿时先确认它认不认，别把这条当全局铁律（见 `references/real-corpus.md`「三、3.1」）。
+
 ---
 
 ## 我会犯的错（已记录在案）
@@ -44,16 +46,22 @@
 
 ```
 SKILL.md                  入口（七维决策 + 反默认 + 模型翻译 + 十三道自检）
+references/eye.md         动笔之前那五分钟：找不对劲的地方 / 感受翻成物理量 / 只偷一件 / 什么时候停
 references/entry.md       从零起草（推荐入口，八槽 + 三问 + 两闸）
 references/aesthetic.md   审美内核正文（为什么不好看 + 七维哲学层）
 references/aesthetic/     附录 A–I 九篇（明度/构图/色彩/材质/瞬间/配方/翻译/风格提取/批评），按需加载
 references/style-heads.md 12 个风格主头 + 6 层质感
+references/genres.md 题材卡（识别特征 / 视觉骨架 / 写法要点 / 失败模式；一张卡一个题材，标证据等级）
+references/reverse-engineer.md 反推流程（从参考图回到提示词：四条纪律 / 看画五问 / 先跑三个数 / 分层且默认出 Layout / 色号不是色名 / 七维翻译 / 三处锚 / 返图差值→改哪句 / 完整记录）
 references/word-budget.md 字数预算
 references/composition.md 景别 / 视角 / 构图
 references/symptoms.md    症状 → 改哪句
 references/moss-rules.md  MOSS 实测规则正文 + 索引 G1–G98
 references/casebook.md    G1–G98 实测证据
 references/gap-audit.md   缺口台账
+references/lexicon.md     7526 条中英词表（差一个词叫什么）+ 三条翻译纪律
+references/real-corpus.md 10958 条真提示词的实测分布（tag 密度 / 画师数 / 质量词 / 参数基线）
+references/scene-anatomy.md 64 条 NAI 串的切片分析（参考用；入口在 lexicon.md §八，SKILL 不索引）
 references/decoupling.md                [P1] 先验解绑协议
 references/action-and-motion.md         [P2] 大动态与格斗库
 references/multi-character.md           [P3] 双人战术对峙
@@ -63,6 +71,8 @@ references/mixed-lighting-and-split-tones.md [P6] 混合光与双色温分裂
 references/cinematic-geometries.md      [P7] 21:9宽银幕与极端机位
 references/storyboard-and-continuity.md [P8] 分镜叙事与多格漫画
 references/scenery-and-scale.md         [P9] 无人空景与静物尺度
+scripts/crop.py           切块看图（九宫格 + 指定局部，放大到可辨认尺寸）
+scripts/look.py           第二双眼睛（图 + 二十问发给视觉更强的模型，换回可核对答案）
 scripts/probe.py          单张实测
 scripts/lint.py           十三道关自检
 scripts/verify.py         参考图 vs 出图：逐项对照 + 六类判据 + 三联色差热图
@@ -70,9 +80,25 @@ scripts/preview.py        布局预览
 scripts/compile_prompt.py 编译成官方格式
 scripts/translate.py      多引擎通用转译器（MOSS / NAI v5 / Anima / Krea 2）
 scripts/render_krea2_html.py Krea 2 独立渲染器
+scripts/lexicon.py        词表查询（需先跑 fetch_lexicon.py）
+scripts/corpus.py         真提示词查询（需先跑 fetch_lexicon.py --packs）
+scripts/fetch_lexicon.py  一次性下载法典数据（可选，不入库）
 ```
 
 完整说明见 `README.md`。
+
+---
+
+## 以后要改它的时候（维护纪律）
+
+这份包已经到「用它干活、踩到新坑才续写一条」的状态。真要动，守四条：
+
+1. **`SKILL.md` 只做路由和第一原则**，不塞正文。判断标准：一段话如果读者只在写某类图时才看，它属于 `references/`；只有「每次都要先看到」的才留在入口。入口已经 239 行，再长就没人读得完，长到没人读完的入口等于没有入口。
+2. **加东西之前先问能不能删**。v7 净减了三处（八大支柱表、六拍骨架索引、scene-anatomy 的骨架地位），每一处当初加进去时都觉得是在补缺口。补缺口的冲动，多半是把「我不知道该画什么」误诊成「我缺一条规则」。
+3. **关 13 永远是 WARN，不许升 FAIL**。它只会匹配关键词，匹配不出质感；一旦硬拦，为了过关就只能往每条提示词里塞它认识的短语——脚本亲手把 Agent 逼成八股生成器。
+4. **新规则要带证据等级**。`casebook.md` 的 G 编号是 MOSS 实测，`real-corpus.md` 是 10958 条社区统计，`eye.md` 是经验观察——三者不能混着说。写新条目时标明它属于哪一类，别把某一个模型的玄学讲成普适真理（「零质量词」只在 MOSS 成立就是活例子）。
+
+踩到新坑时的正确动作：在 `references/casebook.md` 末尾续一条，格式照现有条目——`### G99 一句话结论（NNN 号实测，YYYY-MM-DD）` 标题，正文写「怎么写的 / 出了什么 / 数值判据（soft·strong·p99·dark）/ 判死还是成立 / 族谱归并」，编号接着往下走。不要为此新建一篇 reference，也不要动 `SKILL.md`。
 
 ---
 
