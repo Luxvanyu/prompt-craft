@@ -4,7 +4,7 @@
 
 规则全部来自 174 张出图实验（G1–G98 编号，每条带实测数值），不是审美偏好。合并自 `moss-replica` 与 `aesthetic-core` 两个包。
 
-**下载**：[最新发行版](https://github.com/Luxvanyu/prompt-craft/releases/latest)——`prompt-craft-v8.zip`（52 个文件，附 sha256）。也可以直接 clone 本仓库：`main` 是完整版，`lite` 分支是轻量版。
+**下载**：[最新发行版](https://github.com/Luxvanyu/prompt-craft/releases/latest)——附件名形如 `prompt-craft-v<版本>.zip`，同目录有 `.sha256` 可核对。也可以直接 clone 本仓库：`main` 是完整版，`lite` 分支是轻量版。
 
 ---
 
