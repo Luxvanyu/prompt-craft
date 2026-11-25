@@ -48,7 +48,8 @@
 │   ├── mixed-lighting-and-split-tones.md [P6] 混合光源与色温分裂：主副光权力阶梯、暗部脊梁色彩隔离
 │   ├── cinematic-geometries.md      [P7] 21:9宽银幕与极端机位：翼展全屏填塞、60度陡峭大俯拍四事实
 │   ├── storyboard-and-continuity.md [P8] 序列叙事与漫画多格分镜：跨格角色硬锚定、BBox坐标硬隔离
-│   └── scenery-and-scale.md         [P9] 无人空景与静物尺度：建筑模数不可动物理尺、厘米级三合一锁定
+│   ├── scenery-and-scale.md         [P9] 无人空景与静物尺度：建筑模数不可动物理尺、厘米级三合一锁定
+│   └── moss-pages.md                MOSS 分格页版面引擎：页面 JSON 七条铁律、角色卡 base+variants、scene-roll（重活在 moss-manga 技能）
 └── scripts/
     ├── crop.py                      切块看图：九宫格 + 指定局部，放大到可辨认尺寸（反推第一步）
     ├── look.py                      第二双眼睛：图 + 二十问发给视觉更强的模型，换回可核对答案与 UNCLEAR

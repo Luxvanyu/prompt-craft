@@ -72,6 +72,7 @@ references/mixed-lighting-and-split-tones.md [P6] 混合光与双色温分裂
 references/cinematic-geometries.md      [P7] 21:9宽银幕与极端机位
 references/storyboard-and-continuity.md [P8] 分镜叙事与多格漫画
 references/scenery-and-scale.md         [P9] 无人空景与静物尺度
+references/moss-pages.md                MOSS 分格页版面引擎（页面 JSON / 七条铁律 / 角色卡 base+variants / scene-roll；重活在 moss-manga 技能）
 scripts/crop.py           切块看图（九宫格 + 指定局部，放大到可辨认尺寸）
 scripts/look.py           第二双眼睛（图 + 二十问发给视觉更强的模型，换回可核对答案）
 scripts/probe.py          单张实测
