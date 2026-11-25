@@ -261,7 +261,7 @@ def verify_and_align(draft_path, ref_path, out_draft, out_overlay, do_palette=Fa
         Path(out_draft).write_text(json.dumps(draft, ensure_ascii=False, indent=2), encoding="utf-8")
         print("Wrote 16px-aligned draft: %s" % out_draft)
         if z_hints:
-            print("[ALIGN] z_layer 已剥离，只留在对齐稿；直接编译原稿会报 unknown fields。")
+            print("[ALIGN] z_layer 已剥离并落入对齐稿顺序；直接编译原稿不会应用排序，应编译对齐稿。")
 
     if out_overlay and im is not None:
         vis = im.resize((w, h), Image.Resampling.LANCZOS)

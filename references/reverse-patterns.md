@@ -1,7 +1,7 @@
 # 反推特种构图配方库与角色替换
 
 > 这里只放 `reverse-engineer.md` 装不下的两类东西：换角色时会变的东西、容易退化的特殊构图。
-> 每条标证据等级：**【代码】**= 本包脚本会这么判、【实测】**= 返图量过、【外部】**= 来自外部目录或他人经验，本包未实测。
+> 每条标证据等级：**【代码】**= 本包脚本会这么判、**【实测】**= 返图量过、**【外部】**= 来自外部目录或他人经验，本包未实测。
 
 ---
 
@@ -41,5 +41,5 @@
 【实测，单样本】适用实景走廊叠罗汉壁咚、电车吊环手办实拍、雪地像素道具雪天使。`summary` 里声明混合媒介（`mixed-media illustration pairing anime characters over a real photograph`），并把真实环境的光色、接触面投影、反光落到二次元人物身上——贴纸浮空感的来源不是画风差异，是投影和反光没跟上。
 
 ### 配方 5：水中仰浮 & 极限低机位广角
-- 【实测】**水中仰浮**（睡莲 / 花海 / 泳池）：写 `overhead` 或 `looking straight down` 之后，**必须紧跟一句只有这个角度才看得见的画面事实**（头顶、双肩、被压缩的肢体都行），否则模型会退化成平视站姿。配 `horizon line above the top edge` 与焦散光斑、水波高光锚点。（`reverse-engineer.md` §十 也是这条：视角词本身不锁机位，证据句才锁。）
+- 【实测】**水中仰浮**（睡莲 / 花海 / 泳池）：写 `overhead` 或 `looking straight down` 之后，**必须紧跟一句只有这个角度才看得见的画面事实**（头顶、双肩、被压缩的肢体都行），否则模型会退化成平视站姿。配 `horizon line above the top edge` 与焦散光斑、水波高光锚点。（`reverse-engineer.md` §十 也是这条：视角词本身不锁机位，证据句才锁；【代码】若跑 MOSS `lint.py`，字面 `directly overhead` / `looking straight down` 会触发关 3 拦截，改写 `steep sixty-degree high-angle looking down` 配证据句即可过关。）
 - 【代码】**极限低机位广角**（高架桥倒立街舞 / 仰拍围圈）：`from below` 与 `foreshortening` / `wide angle distortion` 同写会被关 3 判互斥——不是玄学，脚本会拦。改用 `low-angle shot from ground level looking up`，再给具体近大远小落点（鞋底贴右上前景、支撑手压实地面）。
