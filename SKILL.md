@@ -24,6 +24,7 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 | 想控制大小/比例 | `references/moss-rules.md`（尺寸四把尺 + G46/G54/G64） |
 | 出图不对 | `references/symptoms.md`（症状 → 改哪句 → 对应规则） |
 | 贴了参考图要复刻／反推 | **`references/reverse-engineer.md`**（先量再写 · **默认出 Layout** · 看画五问 · 色号不是色名 · 返图差值改哪句） |
+| 复刻时要换固定 IP 角色／高难特种构图（悬空、UI、多格群像、混媒介、水中仰浮） | **`references/reverse-patterns.md`**（角色识别度分级 · 清理替换 · 五类易退化构图，逐条标证据等级） |
 | 想知道某条规则凭什么 | `references/casebook.md`（G1–G98 全部实测证据） |
 | 想看还有什么题材没测过 | `references/gap-audit.md`（已验证 / 判死 / 不做） |
 | 出现光环/抓杯/头纱等先验污染 | `references/decoupling.md`（先验解绑与负向阻断协议） |
@@ -162,14 +163,17 @@ description: "任何「把想画的东西写成提示词」的任务都从这里
 
 ```
 python scripts/probe.py IMG                     # 出图后测：明度五档/近白面积/饱和方向
-python scripts/lint.py DRAFT.json               # 草稿十三道关（Layout / 纯 caption 都适用）
-python scripts/preview.py DRAFT.json --out L.png  # bbox 画出来看
-python scripts/compile_prompt.py DRAFT.json --output OUT.txt
+python scripts/lint.py DRAFT.json [--swap]      # 草稿十三道关（固定 IP 角色复刻加 --swap 降噪）
+python scripts/align_bboxes.py dims REF.png           # 按原图比例自动算 16 倍数高分辨率
+python scripts/align_bboxes.py grid REF.png -o G.png  # 反推前铺 10% 网格精确读框
+python scripts/align_bboxes.py verify DRAFT.json --ref REF.png --out-draft D_aligned.json --out-overlay L.png --extract-palette  # 16px 吸附 + 背景到前景排序 + 主色采样 + 叠框核验
+python scripts/preview.py DRAFT.json --out L.png  # 纯草稿 bbox 预览
+python scripts/compile_prompt.py D_aligned.json --output OUT.txt
 python scripts/lexicon.py 侧光                   # 差一个词叫什么：7526 条中英词典
 python scripts/corpus.py --find 侧光             # 看一万条真提示词里这个词怎么组合（需 --packs）
 ```
 
-顺序固定：**预览 → 调 y → lint → 编译**。`lexicon.py` 和 `corpus.py` 是查词用的，随时可跑；
+顺序：**有参考图的 Layout 走 网格读框 → align_bboxes verify → lint → 编译**；无参考图的原创、或只出 Caption 的，跳过 align_bboxes 直接 **lint → 编译**（没框可对齐，dims/grid/verify 都没有对象）。`lexicon.py` 和 `corpus.py` 是查词用的，随时可跑；
 `--scene` 出 64 条成品场景串，`--cat` 出全分类树，`--neg 词` 查这批人的负向写法。
 `corpus.py` 要 42 MB 数据（`python scripts/fetch_lexicon.py --packs` 一次）；
 没下也不影响写稿，只有想核对「别人是不是也这么写」时才需要。

@@ -3,7 +3,7 @@
 """MOSS 提示词交付前自检（lint）：把草稿 JSON 和参考图实测值做对照，抓自相矛盾与漏项。
 
 用法:
-    python lint.py <草稿.json> [--ref 参考图] [--strict]
+    python lint.py <草稿.json> [--ref 参考图] [--strict] [--swap]
 
 十三道关:
     关 1  结构       width/height 16 倍数、bbox 在画布内、label 合法、text item 带 text
@@ -364,11 +364,20 @@ def lint(draft, ref=None, intents=()):
             if 'original character' in low or 'oc character' in low:
                 continue
             if NAME_START.match(cap):
-                add(1, WARN,
-                    'item %d 的 character caption 以角色名开头' % i,
-                    'G25/G22：带名字的 character 实测被放大 1.8–3.6 倍，且会把整套角色先验'
-                    '（光环/画风/服装）一起拽进来。除非用户点名要某个固定角色，'
-                    '否则删掉名字，直接写「a woman in a long red coat, seen from behind」')
+                if 'swap' not in intents:
+                    add(1, WARN,
+                        'item %d 的 character caption 以角色名开头' % i,
+                        'G25/G22：带名字的 character 实测被放大 1.8–3.6 倍，且会把整套角色先验'
+                        '（光环/画风/服装）一起拽进来。除非用户点名要某个固定角色，'
+                        '否则删掉名字，直接写「a woman in a long red coat, seen from behind」')
+                else:
+                    b = it.get('bbox') or [0, 0, 0, 0]
+                    frac = (b[2] - b[0]) * (b[3] - b[1]) / float(draft.get('width', 1) * draft.get('height', 1))
+                    add(1, WARN,
+                        'item %d 写了角色名（--swap 已按换人模式放行），bbox 占画布 %.0f%%' % (i, frac * 100),
+                        '名字仍会往「整套角色先验」拽（光环/服装/画风）。换人时要么把 bbox 收到'
+                        '实测该角色的实际占比，要么在 caption 里明写要改的那几件（发色/瞳色/服装）；'
+                        '改完再出图核一遍占比，别让框停在原位。')
 
     # ---------- 关 2 数值 ----------
     if ref:
@@ -838,6 +847,8 @@ def main():
             ref_p = args[i + 1]
         if a == '--intent' and i + 1 < len(args):
             intents = [x.strip().lower() for x in args[i + 1].split(',') if x.strip()]
+        if a == '--swap':
+            intents.append('swap')
 
     draft = load_draft(path)
     ref = ref_profile(ref_p) if ref_p else None

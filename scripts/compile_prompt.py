@@ -119,10 +119,16 @@ def compile_prompt(draft):
     require(isinstance(items, list) and bool(items),
             "items must be a nonempty flat array — items 必须是平铺数组（不要按角色分组嵌套），且至少一项")
     compiled_items = []
+    z_layers_seen = []
     for index, item in enumerate(items):
         location = f"items[{index}]"
-        fields(item, {"label", "caption", "bbox", "text", "tags", "palette"},
+        fields(item, {"label", "caption", "bbox", "text", "tags", "palette", "z_layer"},
                {"label", "caption", "bbox"}, location)
+        if "z_layer" in item:
+            require(item["z_layer"] in ("bg", "fg"),
+                    f"{location}.z_layer must be bg or fg — 这是 align_bboxes.py 的层级工作标记，"
+                    f"只用来排序，不写进成图；当前填的是 {item['z_layer']!r}")
+            z_layers_seen.append(location)
         require(item["label"] in ("object", "character", "text"),
                 f"{location}.label must be object, character or text — 现在填的是 {item['label']!r}；不要用 type 字段")
         text(item["caption"], f"{location}.caption")
@@ -136,8 +142,13 @@ def compile_prompt(draft):
                 strings(item[key], f"{location}.{key}")
         compiled_items.append({
             key: centered_box(value, width, height, f"{location}.bbox") if key == "bbox" else value
-            for key, value in item.items()
+            for key, value in item.items() if key != "z_layer"
         })
+
+    if z_layers_seen:
+        print(f"[COMPILE] 已忽略 z_layer（{len(z_layers_seen)} 项）：它只给 align_bboxes.py 排序用，"
+              f"不进成图。若还没跑对齐，先 python3 scripts/align_bboxes.py verify … 让顺序落地。",
+              file=sys.stderr)
 
     result = {"summary": summary, "items": compiled_items,
               "bbox_coord_space": "abs_centralized", "bbox_format": "yxyx"}

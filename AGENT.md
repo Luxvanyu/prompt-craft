@@ -53,6 +53,7 @@ references/aesthetic/     附录 A–I 九篇（明度/构图/色彩/材质/瞬�
 references/style-heads.md 12 个风格主头 + 6 层质感
 references/genres.md 题材卡（识别特征 / 视觉骨架 / 写法要点 / 失败模式；一张卡一个题材，标证据等级）
 references/reverse-engineer.md 反推流程（从参考图回到提示词：四条纪律 / 看画五问 / 先跑三个数 / 分层且默认出 Layout / 色号不是色名 / 七维翻译 / 三处锚 / 返图差值→改哪句 / 完整记录）
+references/reverse-patterns.md 换角色与特殊构图（角色识别度分级 / 清理替换 / 五类易退化构图，逐条标证据等级）
 references/word-budget.md 字数预算
 references/composition.md 景别 / 视角 / 构图
 references/symptoms.md    症状 → 改哪句
@@ -75,6 +76,7 @@ scripts/crop.py           切块看图（九宫格 + 指定局部，放大到可
 scripts/look.py           第二双眼睛（图 + 二十问发给视觉更强的模型，换回可核对答案）
 scripts/probe.py          单张实测
 scripts/lint.py           十三道关自检
+scripts/align_bboxes.py   Layout 框对齐（算 16 倍数分辨率 / 铺网格读框 / 16px 吸附 + 背景到前景排序 + 主色采样 + 叠框）
 scripts/verify.py         参考图 vs 出图：逐项对照 + 六类判据 + 三联色差热图
 scripts/preview.py        布局预览
 scripts/compile_prompt.py 编译成官方格式

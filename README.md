@@ -29,7 +29,8 @@
 │   │   └── i-critique.md            附录 I 批评（出图后的诊断法）
 │   ├── style-heads.md               12 个风格主头 + 6 层质感 + 互斥纪律
 │   ├── genres.md                    题材卡：只收多张样本互相印证的（现 G-01 图形海报式插画）；单张参考图走反推
-│   ├── reverse-engineer.md          反推流程（参考图 → 提示词：先量再写、色号不是色名、返图差值改哪句）
+│   ├── reverse-engineer.md          反推流程（参考图 → 提示词：先量再写、默认出 Layout、色号不是色名、返图差值改哪句）
+│   ├── reverse-patterns.md          换角色与易退化构图（角色识别度 / 清理替换 / 五类配方，逐条标证据等级）
 │   ├── word-budget.md               字数预算（450–1100 词三档怎么切、超了按什么顺序删）
 │   ├── composition.md               景别 8 级 / 视角 5 种 / 构图 9 种 / 改构图症状表
 │   ├── symptoms.md                  症状 → 改哪句 → 规则编号（出图不对时看这个）
@@ -53,6 +54,7 @@
     ├── look.py                      第二双眼睛：图 + 二十问发给视觉更强的模型，换回可核对答案与 UNCLEAR
     ├── probe.py                     测一张图：mean/dark/mid/nw/p1/p99/sat/lit/shadow/soft/strong/flat + 6×6 网格
     ├── lint.py                      草稿十三道关工业级自检（含先验解绑、动作解剖闭环、双人防串色、美学质感巡检）
+    ├── align_bboxes.py              Layout 框对齐：算 16 倍数分辨率 / 铺网格读框 / 16px 吸附 + 层级排序 + 主色采样 + 叠框
     ├── preview.py                   把草稿的 bbox 画出来看
     ├── compile_prompt.py            草稿 → MOSS 官方编译格式（abs+xyxy → abs_centralized+yxyx）
     ├── verify.py                    参考图 vs 出图：逐项对照 + 6×6 差值矩阵 + 诊断清单 + 三联色差热图
@@ -206,6 +208,27 @@ python scripts/preview.py draft.json --img out.png --out overlay.png
 ```bash
 python scripts/compile_prompt.py draft.json --output out.txt
 ```
+
+### align_bboxes.py — Layout 框对齐
+
+有参考图、且要出 Layout 时才用。三件事：
+
+```bash
+# 1. 按原图比例算 16 倍数分辨率（默认基准面积 1536×1344 ≈ 2.06M，--area 可改）
+python scripts/align_bboxes.py dims REF.png      # -> orig=1000x1279 (ratio=0.782) -> target=1024x1296
+
+# 2. 原图叠 10% 网格，照格读坐标，不靠目测
+python scripts/align_bboxes.py grid REF.png -o grid.png
+
+# 3. 16px 吸附 + 背景到前景排序 + 主色采样 + 画叠框
+python scripts/align_bboxes.py verify draft.json --ref REF.png \
+    --out-draft aligned.json --out-overlay overlay.png --extract-palette \
+    --bg-text "KIVOTOS,山海經"
+```
+
+`verify` 会：把每个框吸附到 16 的倍数（挪超过 8px 会告警，说明原始坐标读错了）；按 **背景文字 → 背景大物件 → 局部道具 → 角色 → 前景文字** 重排 `items`；`--extract-palette` 时按框内像素占比采 3 个主色（就近重复会自动合并）；`--out-overlay` 画红=character / 蓝=object / 黄=text 的框，中文标签需要系统字体，没有就退成占位符。
+
+草稿里可以写 `"z_layer": "bg"` 或 `"fg"` 指定层级（比 `--bg-text` 的子串匹配可靠）。它只是工作标记，`verify` 会剥掉；`compile_prompt.py` 也认这两个值并跳过，不会报 unknown fields。
 
 ---
 
